@@ -17,7 +17,7 @@
 #
 #  Author:  Gary Larizza
 #  Created: 12/17/2010
-#  Last Modified: 12/17/2010
+#  Last Modified: 7/11/2011
 #
 #  Description:  This Makefile will download the version of Puppet specified
 #    in the PACKAGE_VERSION variable from the Puppet Labs website, untar it,
@@ -37,10 +37,10 @@ PAYLOAD=\
 		pack-puppet-etc \
 		pack-puppet-usr \
 		pack-puppet-preflight
-		
+
 # Variable Declarations:  Any variable can be set from the command line by
 #    doing this:  "make pkg PACKAGE_VERSION=2.6.2"
-PACKAGE_VERSION=2.6.4
+PACKAGE_VERSION=2.6.9
 PACKAGE_MAJOR_VERSION=`echo ${PACKAGE_VERSION} | awk -F '.' '{print $$1}'`
 PACKAGE_MINOR_VERSION=`echo ${PACKAGE_VERSION} | awk -F '.' '{print $$2$$3}'`
 PUPPETFILE=puppet-${PACKAGE_VERSION}
@@ -57,7 +57,7 @@ unpack-puppet-${PUPPETFILE}:
 pack-puppet-etc: l_etc_puppet
 	@sudo ${CP} ./${PUPPETFILE}/conf/auth.conf ${WORK_D}/etc/puppet/auth.conf
 	@sudo chmod 644 ${WORK_D}/etc/puppet/auth.conf
-	
+
 # This rule copies the Puppet binaries, libraries, documentation, and manpages
 #    to their Mac-specific locations in /usr/ and sets permissions to 755.
 pack-puppet-usr: l_usr_bin l_usr_lib_ruby_site_ruby_1_8 l_usr_sbin l_usr_share_doc l_usr_share_man
@@ -67,17 +67,14 @@ pack-puppet-usr: l_usr_bin l_usr_lib_ruby_site_ruby_1_8 l_usr_sbin l_usr_share_d
 	@sudo chmod -R 755 ${WORK_D}/usr/lib/
 	@sudo ${CP} -R ./${PUPPETFILE}/sbin/ ${WORK_D}/usr/sbin/
 	@sudo chmod -R 755 ${WORK_D}/usr/sbin/
-	@sudo ${CP} -R ./${PUPPETFILE}/CHANGELOG ${WORK_D}/usr/share/doc
-	@sudo ${CP} -R ./${PUPPETFILE}/CHANGELOG.old ${WORK_D}/usr/share/doc
+	@sudo ${CP} -R ./${PUPPETFILE}/CHANGELOG* ${WORK_D}/usr/share/doc
 	@sudo ${CP} -R ./${PUPPETFILE}/COPYING ${WORK_D}/usr/share/doc
 	@sudo ${CP} -R ./${PUPPETFILE}/LICENSE ${WORK_D}/usr/share/doc
-	@sudo ${CP} -R ./${PUPPETFILE}/README ${WORK_D}/usr/share/doc
-	@sudo ${CP} -R ./${PUPPETFILE}/README.queueing ${WORK_D}/usr/share/doc
-	@sudo ${CP} -R ./${PUPPETFILE}/README.rst ${WORK_D}/usr/share/doc
+	@sudo ${CP} -R ./${PUPPETFILE}/README* ${WORK_D}/usr/share/doc
 	@sudo chmod -R 755 ${WORK_D}/usr/share/doc/
 	@sudo ${CP} -R ./${PUPPETFILE}/man/ ${WORK_D}/usr/share/man
 	@sudo chmod -R 755 ${WORK_D}/usr/share/man/
-	
+
 # This rule sets up the preflight script from the Puppet source's /conf/osx
 #    directory and installs it into our scripts directory. From there, we
 #    use sed to strip out variables used in the /conf/osx/createpackage.sh
@@ -86,4 +83,3 @@ pack-puppet-preflight:
 	@sudo ${INSTALL} -m 755 ./${PUPPETFILE}/conf/osx/preflight ${SCRIPT_D}
 	sed -i '' "s#{SITELIBDIR}#/usr/lib/ruby/site_ruby/1.8#g" "${SCRIPT_D}/preflight"
 	sed -i '' "s#{BINDIR}#/usr/bin#g" "${SCRIPT_D}/preflight"
-	
