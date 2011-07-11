@@ -45,11 +45,11 @@ PAYLOAD=\
 		pack-mc-launchd \
 		pack-mc-mcollectived \
 		pack-mc-preflight-all
-		
+
 # Variable Declarations:  
 #    Any variable can be set from the command line by doing this:
-#    "make pkg PACKAGE_VERSION=1.2.0"
-PACKAGE_VERSION=1.2.0
+#    "make pkg PACKAGE_VERSION=1.2.1"
+PACKAGE_VERSION=1.2.1
 PACKAGE_MAJOR_VERSION=`echo ${PACKAGE_VERSION} | awk -F '.' '{print $$1}'`
 PACKAGE_MINOR_VERSION=`echo ${PACKAGE_VERSION} | awk -F '.' '{print $$2$$3}'`
 PACKAGE_VERSION_CHECK=`echo ${PACKAGE_VERSION} | awk -F '.' '{print $$3}'`
@@ -135,7 +135,7 @@ pack-mc-mcollectived: l_usr_sbin
 pack-mc-lib: l_usr_lib_ruby_site_ruby_1_8
 	@sudo ${CP} -R ./${MCFILE}/lib/* ${WORK_D}/usr/lib/ruby/site_ruby/1.8
 	@sudo chmod -R 755 ${WORK_D}/usr/lib/ruby/site_ruby/1.8
-	
+
 # This rule will install base configuration files to /etc/mcollective
 pack-mc-config: l_etc_mcollective
 	@sudo ${INSTALL} -m 755 ./${MCFILE}/etc/facts.yaml.dist \
@@ -144,14 +144,14 @@ pack-mc-config: l_etc_mcollective
 	  ${WORK_D}/etc/mcollective/rpc-help.erb
 	@sudo ${CP} -R ./${MCFILE}/etc/ssl ${WORK_D}/etc/mcollective/
 	@sudo chmod -R 755 ${WORK_D}/etc/mcollective
-	
+
 # This rule installs the MCollective server configuration file to /etc/mcollective
 #    It also adjusts the daemonize setting for OS X
 pack-mc-config-server: l_etc_mcollective
 	@sudo ${INSTALL} -m 600 ./${MCFILE}/etc/server.cfg.dist \
 		${WORK_D}/etc/mcollective/server.cfg
 	sed -i '' "s#daemonize = 1#daemonize = 0#g" "${WORK_D}/etc/mcollective/server.cfg"
-	
+
 # This rule installs the MCollective server configuration file to 
 #    /etc/mcollective  It also adjusts the libdir setting to reflect the 
 #    directory we've used above.
@@ -175,13 +175,13 @@ pack-mc-launchd: l_Library_LaunchDaemons
 
 pack-mc-preflight-all:
 	@sudo ${INSTALL} -m 755 ./preflight ${SCRIPT_D}
-	
+
 pack-mc-preflight-client:
 	@sudo ${INSTALL} -m 755 ./preflight_client ${SCRIPT_D}/preflight
-	
+
 pack-mc-preflight-common:
 	@sudo ${INSTALL} -m 755 ./preflight_common ${SCRIPT_D}/preflight
-	
+
 pack-mc-preflight-base:
 	@sudo ${INSTALL} -m 755 ./preflight_base ${SCRIPT_D}/preflight
 
