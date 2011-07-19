@@ -39,7 +39,7 @@ PAYLOAD=\
 		pack-facter-preflight
 
 # Variable Declarations:  Any version can be chosen from the command line when running
-#    for example:  "make pkg PACKAGE_VERSION=2.7.1"
+#    for example:  "make pkg PACKAGE_VERSION=1.5.8"
 PACKAGE_VERSION=1.6.0
 PACKAGE_MAJOR_VERSION=`echo ${PACKAGE_VERSION} | awk -F '.' '{print $$1}'`
 PACKAGE_MINOR_VERSION=`echo ${PACKAGE_VERSION} | awk -F '.' '{print $$2$$3}'`
