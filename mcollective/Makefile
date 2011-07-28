@@ -109,6 +109,26 @@ endif
 # This rule will curl the selected version of MCollective and untar it into the 
 #    directory in which the Makefile resides.
 
+l_etc_mcollective: l_private_etc
+	@sudo mkdir -p ${WORK_D}/private/etc/mcollective
+	@sudo chown -R root:wheel ${WORK_D}/private/etc/mcollective
+	@sudo chmod -R 755 ${WORK_D}/private/etc/mcollective
+
+l_usr_libexec: l_usr
+	@sudo mkdir -p ${WORK_D}/usr/libexec
+	@sudo chown -R root:wheel ${WORK_D}/usr/libexec
+	@sudo chmod -R 755 ${WORK_D}/usr/libexec
+
+l_usr_libexec_mcollective: l_usr
+	@sudo mkdir -p ${WORK_D}/usr/libexec/mcollective
+	@sudo chown -R root:wheel ${WORK_D}/usr/libexec/mcollective
+	@sudo chmod -R 755 ${WORK_D}/usr/libexec/mcollective
+
+l_usr_lib_ruby_site_ruby_1_8: l_usr
+	@sudo mkdir -p ${WORK_D}/usr/lib/ruby/site_ruby/1.8
+	@sudo chown -R root:wheel ${WORK_D}/usr/lib/ruby/site_ruby/1.8
+	@sudo chmod -R 755 ${WORK_D}/usr/lib/ruby/site_ruby/1.8
+
 unpack-mc-${MCFILE}:
 	curl ${MCURL} -o ${MCFILE}.tgz
 	@sudo ${TAR} xzf ${MCFILE}.tgz
@@ -139,26 +159,26 @@ pack-mc-lib: l_usr_lib_ruby_site_ruby_1_8
 # This rule will install base configuration files to /etc/mcollective
 pack-mc-config: l_etc_mcollective
 	@sudo ${INSTALL} -m 755 ./${MCFILE}/etc/facts.yaml.dist \
-	  ${WORK_D}/etc/mcollective/facts.yaml
+		${WORK_D}/private/etc/mcollective/facts.yaml
 	@sudo ${INSTALL} -m 755 ./${MCFILE}/etc/rpc-help.erb \
-	  ${WORK_D}/etc/mcollective/rpc-help.erb
-	@sudo ${CP} -R ./${MCFILE}/etc/ssl ${WORK_D}/etc/mcollective/
-	@sudo chmod -R 755 ${WORK_D}/etc/mcollective
+		${WORK_D}/private/etc/mcollective/rpc-help.erb
+	@sudo ${CP} -R ./${MCFILE}/etc/ssl ${WORK_D}/private/etc/mcollective/
+	@sudo chmod -R 755 ${WORK_D}/private/etc/mcollective
 
 # This rule installs the MCollective server configuration file to /etc/mcollective
 #    It also adjusts the daemonize setting for OS X
 pack-mc-config-server: l_etc_mcollective
 	@sudo ${INSTALL} -m 600 ./${MCFILE}/etc/server.cfg.dist \
-		${WORK_D}/etc/mcollective/server.cfg
-	sed -i '' "s#daemonize = 1#daemonize = 0#g" "${WORK_D}/etc/mcollective/server.cfg"
+		${WORK_D}/private/etc/mcollective/server.cfg
+	sed -i '' "s#daemonize = 1#daemonize = 0#g" "${WORK_D}/private/etc/mcollective/server.cfg"
 
 # This rule installs the MCollective server configuration file to 
-#    /etc/mcollective  It also adjusts the libdir setting to reflect the 
+#    /private/etc/mcollective  It also adjusts the libdir setting to reflect the
 #    directory we've used above.
 
 pack-mc-config-client: l_etc_mcollective
 	@sudo ${INSTALL} -m 600 ./${MCFILE}/etc/client.cfg.dist \
-		${WORK_D}/etc/mcollective/client.cfg
+		${WORK_D}/private/etc/mcollective/client.cfg
 
 # This rule installes a launchd plist to call mcollectived into 
 #   /Library/LaunchDaemons 
