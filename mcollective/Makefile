@@ -141,8 +141,6 @@ pack-mc-libexec: l_usr_libexec_mcollective
 # This rule installs the MCollective client binaries to /usr/sbin
 pack-mc-binaries: l_usr_sbin
 	@sudo ${INSTALL} -m 755 ./${MCFILE}/mc-* ${WORK_D}/usr/sbin
-	if [ ${PACKAGE_VERSION_CHECK} -gt 0 ]; then /usr/bin/sudo ${INSTALL} \
-  -m 755 ./${MCFILE}/mc ${WORK_D}/usr/sbin; fi 
 	if [ ${PACKAGE_VERSION_FULL} -gt 113 ]; then /usr/bin/sudo ${INSTALL} \
   -m 755 ./${MCFILE}/mco ${WORK_D}/usr/sbin; fi
 
