@@ -55,7 +55,7 @@ PACKAGE_MINOR_VERSION=`echo ${PACKAGE_VERSION} | awk -F '.' '{print $$2$$3}'`
 PACKAGE_VERSION_CHECK=`echo ${PACKAGE_VERSION} | awk -F '.' '{print $$3}'`
 PACKAGE_VERSION_FULL=`echo ${PACKAGE_VERSION} | awk -F '.' '{print $$1$$2$$3}'`
 MCFILE=mcollective-${PACKAGE_VERSION}
-MCURL=http://puppetlabs.com/downloads/mcollective/${MCFILE}.tgz
+MCURL=http://downloads.puppetlabs.com/mcollective/${MCFILE}.tgz
 
 # Package Creation Limiters:
 #    These if-statements will check for one of three values for the TYPE 
@@ -131,7 +131,7 @@ l_usr_lib_ruby_site_ruby_1_8: l_usr
 
 unpack-mc-${MCFILE}:
 	curl ${MCURL} -o ${MCFILE}.tgz
-	@sudo ${TAR} xzf ${MCFILE}.tgz
+	@sudo ${TAR} xvzf ${MCFILE}.tgz
 
 # This rule will install MCollective's plugin files to /usr/libexec/mcollective
 pack-mc-libexec: l_usr_libexec_mcollective
