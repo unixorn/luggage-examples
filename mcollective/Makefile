@@ -17,7 +17,7 @@
 #
 #  Author:  Gary Larizza
 #  Created: 12/17/2010
-#  Last Modified: 5/24/2011
+#  Last Modified: 8/1/2011
 #
 #  Description:  This Makefile will download the version of MCollective
 #    specified in the PACKAGE_VERSION variable from the Puppet Labs website,
@@ -55,7 +55,7 @@ PACKAGE_MINOR_VERSION=`echo ${PACKAGE_VERSION} | awk -F '.' '{print $$2$$3}'`
 PACKAGE_VERSION_CHECK=`echo ${PACKAGE_VERSION} | awk -F '.' '{print $$3}'`
 PACKAGE_VERSION_FULL=`echo ${PACKAGE_VERSION} | awk -F '.' '{print $$1$$2$$3}'`
 MCFILE=mcollective-${PACKAGE_VERSION}
-MCURL=http://puppetlabs.com/downloads/mcollective/${MCFILE}.tgz
+MCURL=http://downloads.puppetlabs.com/mcollective/${MCFILE}.tgz
 
 # Package Creation Limiters:
 #    These if-statements will check for one of three values for the TYPE 
@@ -131,7 +131,7 @@ l_usr_lib_ruby_site_ruby_1_8: l_usr
 
 unpack-mc-${MCFILE}:
 	curl ${MCURL} -o ${MCFILE}.tgz
-	@sudo ${TAR} xzf ${MCFILE}.tgz
+	@sudo ${TAR} xvzf ${MCFILE}.tgz
 
 # This rule will install MCollective's plugin files to /usr/libexec/mcollective
 pack-mc-libexec: l_usr_libexec_mcollective
@@ -141,8 +141,6 @@ pack-mc-libexec: l_usr_libexec_mcollective
 # This rule installs the MCollective client binaries to /usr/sbin
 pack-mc-binaries: l_usr_sbin
 	@sudo ${INSTALL} -m 755 ./${MCFILE}/mc-* ${WORK_D}/usr/sbin
-	if [ ${PACKAGE_VERSION_CHECK} -gt 0 ]; then /usr/bin/sudo ${INSTALL} \
-  -m 755 ./${MCFILE}/mc ${WORK_D}/usr/sbin; fi 
 	if [ ${PACKAGE_VERSION_FULL} -gt 113 ]; then /usr/bin/sudo ${INSTALL} \
   -m 755 ./${MCFILE}/mco ${WORK_D}/usr/sbin; fi
 
