@@ -24,7 +24,8 @@
 #    example usage : /path/to/this/script.bash com.yourdomain
 #
 # Script version :
-#    1.0 : initial release (basic implimentation)
+#    1.0 : initial release (basic implementation)
+#    1.1 : added some additional checks, options and assistance relating to wget and make (developer tools).
 
 # - - - - - - - - - - - - - - - - 
 # script settings
@@ -39,6 +40,8 @@ overwirte_old_copy="NO"
 # remove firefox app and build direcotry when finished? ("YES"/"NO")
 clean_up_build_directory_and_firefox_app="NO"
 
+# build a package and put it into a dmg
+proceed_with_building_pacakge="YES"
 
 # - - - - - - - - - - - - - - - - 
 # calculate some varibles and add clean up function
@@ -82,6 +85,13 @@ fi
 
 # move to this scripts parents directory
 cd "${parent_folder}"
+if [ $? != 0 ] ; then
+    echo "Unable to locate the directory where this script is installed."
+    echo "Please check the script is in a accessible directory and then try"
+    echo "running this script again."
+    export exit_value=-1
+    clean_exit
+fi
 
 # check for old version of application
 if [ -e ./Firefox.app ] && [ "${overwirte_old_copy}" == "NO" ] ; then
@@ -104,8 +114,8 @@ fi
 
 # check we are running as root
 current_user=`whoami`
-if [ "${current_user}" != "root" ] ; then
-    echo "Luggage requires superuser previlidges to build the package."
+if [ "${current_user}" != "root" ] && [ "${proceed_with_building_pacakge}" == "YES" ] ; then
+    echo "Luggage requires superuser privileges to build the package."
     echo "Please run this script as root."
     export exit_value=-1
     clean_exit
@@ -119,6 +129,55 @@ if ! [ -d /usr/local/share/luggage ] ; then
     export exit_value=-1
     clean_exit
 fi
+
+
+# check that wget is installed on this system
+which wget > /dev/null
+if [ $? != 0 ] ; then
+    echo "This script requires that you have wget installed on your system."
+    echo "Just a couple of possible options are listed below : "
+    echo ""
+	echo "     (1) Download and install the pacakge from the following URL :"
+	echo "         http://www.merenbach.com/software/wget"
+	echo ""
+	echo "     (2) Download and install Macports :"
+	echo "         http://www.macports.org/"
+	echo "         To install wget then issue the following commands :"
+	echo ""
+	echo "              $ sudo sudo port selfupdate"
+	echo "              $ sudo port install wget"
+	echo ""
+	echo "Once wget is installed and in your path 'echo \$PATH', then try"
+	echo "running this script again."
+    export exit_value=-1
+    clean_exit
+fi
+
+# check that make is installed on this system
+which wget > /dev/null
+if [ $? != 0 ] && [ "${proceed_with_building_pacakge}" == "YES" ] ; then
+    echo "This script requires that you have make installed on your system."
+    echo "Just one possible options is listed below : "
+    echo ""
+    echo "     (1) Download and install the developer tools package from Apple (recommended) :"
+    echo "         http://developer.apple.com/"
+    echo ""
+    echo "     (2) Download and install fink (intel binary install only for Mac OS X 10.5) :"
+    echo "         http://finkproject.org/"
+    echo ""
+    echo "         To install make then issue the following command :"
+    echo ""
+    echo "              $ sudo fink -b install make"
+    echo ""
+    echo "If you only require the output of the application and not installer package then,"
+    echo "disable the build process within this script configuration settings."
+    echo ""
+    echo "Once the developer tools are installed and that make is within"
+    echo "your path 'echo \$PATH', then try running this script again."
+    export exit_value=-1
+    clean_exit
+fi
+
 
 # - - - - - - - - - - - - - - - - 
 # get latest copy of Firefox.app
@@ -255,17 +314,27 @@ fi
 # Build that package
 # - - - -- - - - - - - - - - - - -
 
-# build it with app2luggage
-full_path_to_firefox="`pwd`/Firefox.app"
-./app2luggage.rb --application="${full_path_to_firefox}" --package-id="${build_package_id}" --reverse-domain=${1}  --remove-exisiting-version
+# If we have been instructed to build the package.
+if [ "${proceed_with_building_pacakge}" == "YES" ] ; then
 
+	# build it with app2luggage
+	full_path_to_firefox="`pwd`/Firefox.app"
+	./app2luggage.rb --application="${full_path_to_firefox}" --package-id="${build_package_id}" --reverse-domain=${1}  --remove-exisiting-version
+	if [ $? != 0 ] ; then
+		echo "Error during building of the package. You may need to install some gems?"
+		export exit_value=-1
+		clean_exit
+	fi
 
-# move the built dmg into this direcotry
-mv -i ./${build_package_id}/${build_package_id}-`date "+%Y%m%d"`.dmg ./
-if [ $? != 0 ] ; then
-    # if we were unable to move the .dmg out of the build directory then
-    # disable clean up of the build directory and do not remove Firefox either.
-    clean_up_build_directory_and_firefox_app="NO"
+	# move the built dmg into this direcotry (just change the output name / destination if required - also possibly remove the -i flag)
+	# mv ./${build_package_id}/${build_package_id}-`date "+%Y%m%d"`.dmg ./${build_package_id}-`date "+%Y-%m-%d_%H-%M-%S"`.dmg
+	mv -i ./${build_package_id}/${build_package_id}-`date "+%Y%m%d"`.dmg ./
+	if [ $? != 0 ] ; then
+		# if we were unable to move the .dmg out of the build directory then
+		# disable clean up of the build directory and do not remove Firefox either.
+		clean_up_build_directory_and_firefox_app="NO"
+	fi
+	
 fi
 
 # clean up the mess
