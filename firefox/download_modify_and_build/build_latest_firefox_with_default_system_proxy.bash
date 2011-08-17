@@ -5,7 +5,7 @@
 # Released under the GNU GPL v3 or later
 #
 # About this script : 
-#    Will download latest Mac OS X version of FireFox (non-beta)
+#    Will download latest Mac OS X version of FireFox
 #    Updates default so that the Mac OS X system proxy is used.
 #    Builds package installer package for this modified version of FireFox
 #    It is easy to alter the 
@@ -19,13 +19,17 @@
 #
 # Notes : 
 #    If you use this script behind a proxy ensure that you have exported your proxy 
-#    settings to the shell which runs this script.
+#    settings to the shell which runs this script. If it is not working behind a proxy
+#    then try on an internet connecton without a proxy. Any suggetions on improving
+#    proxy support are welcome.
 #
 #    example usage : /path/to/this/script.bash com.yourdomain
 #
 # Script version :
 #    1.0 : initial release (basic implementation)
 #    1.1 : added some additional checks, options and assistance relating to wget and make (developer tools).
+#    1.2 : added some ownership changes to the installed application (now admin has write access)
+#    1.3 : now downloads the very latest version availible from MacUpdate
 
 # - - - - - - - - - - - - - - - - 
 # script settings
@@ -42,6 +46,9 @@ clean_up_build_directory_and_firefox_app="NO"
 
 # build a package and put it into a dmg
 proceed_with_building_pacakge="YES"
+
+# download latest version? ("YES"/"NO) - if set to "NO" then an older version will be downloaded.
+download_latest_firefox_version="YES"
 
 # - - - - - - - - - - - - - - - - 
 # calculate some varibles and add clean up function
@@ -216,7 +223,16 @@ fi
 echo "Attempting to download latest OS X version of FireFox...."
 start_link="http://www.macupdate.com"
 mid_link="/app/mac/10700/firefox"
-end_link=`curl ${start_link}${mid_link} 2> /dev/null |  grep 'id="downloadlink' | tail -n 1 | awk -F 'href="' '{print $2}' | awk -F '"' '{print $1}'`
+
+# pick a version to downlaod
+if [ "${download_latest_firefox_version}" == "YES" ] ; then 
+    # picks the latest including beta releases using the head command.
+    end_link=`curl ${start_link}${mid_link} 2> /dev/null |  grep 'id="downloadlink' | head -n 1 | awk -F 'href="' '{print $2}' | awk -F '"' '{print $1}'`
+else
+    # this simply picks the last available download link rather than first by using tail rather than head.
+    end_link=`curl ${start_link}${mid_link} 2> /dev/null |  grep 'id="downloadlink' | tail -n 1 | awk -F 'href="' '{print $2}' | awk -F '"' '{print $1}'`
+fi
+
 download_link="${start_link}${end_link}"
 echo "    Download Link : $download_link"
 user_agent="Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9b5) Gecko/2008032619 Firefox/3.0b5 "
@@ -275,6 +291,8 @@ if [ $? != 0 ] ; then
     export exit_value=-1
     clean_exit
 fi
+
+# it may be good idea to alter the permissions this will need to be sorted.
 
 # unmount the DMG
 hdiutil detach "${image_mount_point}" -quiet
