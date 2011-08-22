@@ -1,0 +1,19 @@
+Title InstallPKG
+Version 
+Description Command line utility providing a simple way to install multiple package files.
+
+There may be an easier way of performing installing multiple packages. Please contact us if you are aware of an easier method.
+DefaultLocation /
+DeleteWarning 
+
+### Package Flags
+
+NeedsAuthorization YES
+Required NO
+Relocatable NO
+RequiresReboot NO
+UseUserMask NO
+OverwritePermissions NO
+InstallFat NO
+RootVolumeOnly NO
+OnlyUpdateInstalledLanguages NO
