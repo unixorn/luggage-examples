@@ -28,8 +28,9 @@
 # Script version :
 #    1.0 : initial release (basic implementation)
 #    1.1 : added some additional checks, options and assistance relating to wget and make (developer tools).
-#    1.2 : added some ownership changes to the installed application (now admin has write access)
-#    1.3 : now downloads the very latest version availible from MacUpdate
+#    1.2 : added some ownership changes to the installed application (now admin has write access).
+#    1.3 : now downloads the very latest version availible from MacUpdate.
+#    1.4 : fixed bug with regards checking for make being insalled on the system.
 
 # - - - - - - - - - - - - - - - - 
 # script settings
@@ -161,7 +162,7 @@ if [ $? != 0 ] ; then
 fi
 
 # check that make is installed on this system
-which wget > /dev/null
+which make > /dev/null
 if [ $? != 0 ] && [ "${proceed_with_building_pacakge}" == "YES" ] ; then
     echo "This script requires that you have make installed on your system."
     echo "Just one possible options is listed below : "
