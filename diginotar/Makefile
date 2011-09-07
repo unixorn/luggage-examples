@@ -13,13 +13,6 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 #
-# 
-# Example of preconfiguring LDAP settings.
-#
-# These plists need editing - search for example.com and change
-# per your local setup. It's probably less hassle to set it up
-# on a workstation then copy the plists from
-# /Library/Preferences/DirectoryService, though.
 
 include /usr/local/share/luggage/luggage.make
 
