@@ -1,0 +1,18 @@
+#!/bin/bash
+#
+# Trash untrustworthy Diginotar root ca cert.
+#
+# See http://www.computerweekly.com/Articles/2011/08/30/247730/Microsoft-warns-of-fraudulent-digital-certificate-issued-by.htm
+#
+# and
+#
+# http://radiotope.com/content/remove-certificate
+#
+# for why.
+
+/usr/bin/security find-certificate -c Diginotar  /System/Library/Keychains/SystemRootCertificates.keychain
+if [ $? -eq 0 ];then
+	logger "Deleting Diginotar root cert from SystemRootCertificates.keychain"
+	/usr/bin/security delete-certificate -Z C060ED44CBD881BD0EF86C0BA287DDCF8167478C /System/Library/Keychains/SystemRootCertificates.keychain
+fi
+
