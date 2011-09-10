@@ -1,0 +1,123 @@
+#!/bin/bash
+
+# (C)2007 Henri Shustak
+# GNU GPL
+# Lucid Information Systems
+# http://www.lucidsystems.org
+
+# This script is the script will install all the packages within the additional_pagckages directory provided
+# InstallPKG has been included in the helper packages directory.
+# Simply change this as required for your needs.
+
+# Version 0.2
+
+working_dir=`dirname "${0}"`
+log_tag=install_packages_from_directory
+
+## This is helpful for if you modify this script and need help debugging.
+#echo $0 >> /tmp.txt
+#ls -l $working_dir  >> /tmp.txt
+#echo "" >> /tmp.txt
+
+
+########
+########   Configurartion
+########
+
+# path to the helper packages and additional packages direcotrys (no trailing slash)
+helper_packages_directory="${working_dir}/helper_packages"
+additional_packags_directory="${working_dir}/additional_packages"
+
+
+
+########
+########   Internal Varibles
+########
+
+
+# Path to InstallPKG
+installpkg_location="${helper_packages_directory}/InstallPKG.pkg"
+
+# Path to the InstallPKG receipit
+installpkg_receipt="/Library/Receipts/InstallPKG.pkg/"
+
+# Path to Uninstall InstallPKG script
+uninstall_installpkg_location="${helper_packages_directory}/InstallPKG-Uninstall.bash"
+
+# Is the InstallPKG installed currenlty
+installpkg_installed="NO"
+
+# Was InstallPKG installed before we started
+installpkg_previously_insalled="NO"
+
+
+
+########
+########   Preflight Check
+########
+
+
+# Check we are running as root
+currentUser=`whoami`
+if [ $currentUser != "root" ] ; then
+    echo This script must be run with super user privileges.
+    logger -s -t $log_tag -p user.error "ERROR! : Insificient priviliges."
+    exit -1
+fi
+
+
+########
+########   Install any additional packages
+########
+
+# Check to see if there are any additional packages which we should be installing.
+
+additional_packages=`ls "${additional_packags_directory}/" | grep pkg`
+if [ "${additional_packages}" != "" ] ; then
+    # There are some additional packags to install, lets get to it.
+    
+    # Check to see if InstallPKG is already installed
+    if [ -d "${installpkg_receipt}" ] ; then
+        installpkg_installed="YES"
+        installpkg_previously_insalled="YES"
+    else
+        # Install the InstallPKG tool if it is availible
+        # InstallPKG is a wrapper to the Apple installer command. It is usd to install the other packckages.
+        if [ -d "${installpkg_location}" ] ; then
+            # Instll InstallPKG onto the root directory
+            logger -s -t $log_tag -p user.info "Installing package helper : InstallPKG"
+            installer -pkg "${installpkg_location}" -target /
+            if [ $? != 0 ] ; then
+                logger -s -t $log_tag -p user.error "ERROR! during install of helper package : InstallPKG"
+                exit -1
+            fi
+            installpkg_installed="YES"
+        else
+            logger -s -t $log_tag -p user.warn "WARNING! There are additional packages waiting to be installed. However there is no InstallPKG availible to deploy them."
+        fi
+    fi
+
+    # Use InstallPKG to install the additional packages
+    if [ "${installpkg_installed}" == "YES" ] ; then
+        logger -s -t $log_tag -p user.info "Installing additional packages..."
+        installpkg "${additional_packags_directory}"/*
+        if [ $? != 0 ] ; then
+            # Version 0.0.6 of InstallPGK will not report errors during the installation. Hopefully a newer version will, lets get ready for that now.
+            logger -s -t $log_tag -p user.error "ERROR! : during additional packages installation."
+        fi
+    fi
+    
+    # Uninsitall InstallPKG if the uninstall script is availible and it was not installed before we started.
+    if [ -f "${uninstall_installpkg_location}" ] && [ "${installpkg_previously_insalled}" == "NO" ] ; then
+        logger -s -t $log_tag -p user.info "Un-installing package helper : InstallPKG"
+        bash "${uninstall_installpkg_location}"
+        if [ $? !=0 ] ; then
+            logger -s -t $log_tag -p user.error "ERROR! during un-install of helper package : InstallPKG"
+        fi
+    fi
+fi    
+
+
+
+exit 0
+
