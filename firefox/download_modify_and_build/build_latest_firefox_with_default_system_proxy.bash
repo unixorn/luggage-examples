@@ -13,7 +13,7 @@
 # Requirements : 
 #    - luggage
 #    - wget
-#    - curl
+#    - curl (no longer used)
 #    - interent access for your system(s)
 #
 #
@@ -23,9 +23,10 @@
 #    then try on an internet connecton without a proxy. Any suggetions on improving
 #    proxy support are welcome. Export example which should work is listed below : 
 #    
-#    export http_proxy="http://proxy:port"
+#      - export http_proxy="http://proxy:port"
+#      - export https_proxy="http://proxy:port"
 #    
-#    example usage : /path/to/this/script.bash com.yourdomain
+#    example usage for this script : /path/to/this/script.bash com.yourdomain
 #
 # Script version :
 #    1.0 : initial release (basic implementation)
@@ -33,6 +34,7 @@
 #    1.2 : added some ownership changes to the installed application (now admin has write access).
 #    1.3 : now downloads the very latest version availible from MacUpdate.
 #    1.4 : fixed bug with regards checking for make being insalled on the system.
+#    1.5 : using wget to download app2luggage.rb rather than curl
 
 # - - - - - - - - - - - - - - - - 
 # script settings
@@ -197,18 +199,21 @@ fi
 if ! [ -f ./app2luggage.rb ] ; then
     download_status="SUCCESS"
     echo "Attempting to download app2luggage...."
-    curl https://raw.github.com/henri/luggage/master/app2luggage.rb -o ./app2luggage.rb 2> /dev/null
+    # older version using : https://raw.github.com/henri/luggage/master/app2luggage.rb -o ./app2luggage.rb 2> /dev/null
+    # would be a good idea to add the cert for github.com and then use the argument --certificate=file
+    wget --quiet --no-check-certificate --output-document=./app2luggage.rb https://raw.github.com/henri/luggage/master/app2luggage.rb
     if [ $? != 0 ] ; then
         download_status="FAIL"
-    fi
-    # check the download - very basic check - no checksum performed in this version of the script.
-    first_line_of_download=`head -n 1 ./app2luggage.rb`
-    if [ "${first_line_of_download}" != "#!/usr/bin/ruby" ] ; then
-        download_status="FAIL"
-        rm ./app2luggage.rb
+    else
+        # check the download - very basic check - no checksum performed in this version of the script.
+        first_line_of_download=`head -n 1 ./app2luggage.rb`
+        if [ "${first_line_of_download}" != "#!/usr/bin/ruby" ] ; then
+            download_status="FAIL"
+            rm ./app2luggage.rb
+        fi
     fi
     # report on the success or failure of the download
-    if [ download_status="SUCCESS" ] ; then
+    if [ "${download_status}" == "SUCCESS" ] ; then
         echo "Download of app2luggage complete."
         # set the permissions on this download
         chmod 755 ./app2luggage.rb
@@ -274,7 +279,6 @@ if [ -e ./Firefox.app ] ; then
         clean_exit
     fi
 fi
-
 
 # remove old build directory if we got this far.
 if [ -d ./${build_package_id} ] ; then
