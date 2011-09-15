@@ -21,8 +21,10 @@
 #    If you use this script behind a proxy ensure that you have exported your proxy 
 #    settings to the shell which runs this script. If it is not working behind a proxy
 #    then try on an internet connecton without a proxy. Any suggetions on improving
-#    proxy support are welcome.
-#
+#    proxy support are welcome. Export example which should work is listed below : 
+#    
+#    export http_proxy="http://proxy:port"
+#    
 #    example usage : /path/to/this/script.bash com.yourdomain
 #
 # Script version :
