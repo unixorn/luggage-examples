@@ -34,7 +34,8 @@
 #    1.2 : added some ownership changes to the installed application (now admin has write access).
 #    1.3 : now downloads the very latest version availible from MacUpdate.
 #    1.4 : fixed bug with regards checking for make being insalled on the system.
-#    1.5 : using wget to download app2luggage.rb rather than curl
+#    1.5 : using wget to download app2luggage.rb rather than curl.
+#    1.6 : added option to use an existing copy of FireFox.app (just modify and build package)
 
 # - - - - - - - - - - - - - - - - 
 # script settings
@@ -54,6 +55,9 @@ proceed_with_building_pacakge="YES"
 
 # download latest version? ("YES"/"NO) - if set to "NO" then an older version will be downloaded.
 download_latest_firefox_version="YES"
+
+# use exisiting copy of FireFox within this directory ("YES"/"NO") - if enabled no new version will be downloaded
+use_exisitng_copy_of_firefox="NO"
 
 # - - - - - - - - - - - - - - - - 
 # calculate some varibles and add clean up function
@@ -95,6 +99,14 @@ if [ "${1}" == "" ] ; then
     exit -1
 fi
 
+# check for invalid option combinations
+if [ "${proceed_with_building_pacakge}" == "NO" ] && [ "${use_exisitng_copy_of_firefox}" == "YES" ]; then
+    echo "Invalid option combination. If proceed_with_building_package is disabled and "
+    echo "use_existing_copy_of_firefox is enabled then nothing will be done."
+    export exit_value=-1
+    clean_exit
+fi
+
 # move to this scripts parents directory
 cd "${parent_folder}"
 if [ $? != 0 ] ; then
@@ -106,12 +118,22 @@ if [ $? != 0 ] ; then
 fi
 
 # check for old version of application
-if [ -e ./Firefox.app ] && [ "${overwirte_old_copy}" == "NO" ] ; then
-    echo "Will not overwrite copy of Firefox which has already been downloaded."
-    echo "Please remove the copy of Firefox within this directory and try running"
-    echo "this script again."
-    export exit_value=-1
-    clean_exit
+if [ "${use_exisitng_copy_of_firefox}" != "YES" ] ; then
+    if [ -e ./Firefox.app ] && [ "${overwirte_old_copy}" == "NO" ] ; then
+        echo "Will not overwrite copy of Firefox which has already been downloaded."
+        echo "Please remove the copy of Firefox within this directory and try running"
+        echo "this script again."
+        export exit_value=-1
+        clean_exit
+    fi
+else
+    if ! [ -e ./Firefox.app ] ; then 
+        echo "Unable to locate a copy of Firefox.app which has already been downloaded."
+        echo "Either place a copy of Firefox.app into same directory as this script or"
+        echo "disable the option \"use_exisitng_copy_of_firefox\" within this script.s"
+        export exit_value=-1
+        clean_exit
+    fi
 fi
 
 # check for old version of app2luggage build output
@@ -192,10 +214,10 @@ fi
 
 
 # - - - - - - - - - - - - - - - - 
-# get latest copy of Firefox.app
+# get latest copy of app2luggage
 # - - - -- - - - - - - - - - - - -
 
-# donwload a copy of app2luggae with --remove-exisiting-version feature
+# donwload a copy of app2luggage with --remove-exisiting-version feature
 if ! [ -f ./app2luggage.rb ] ; then
     download_status="SUCCESS"
     echo "Attempting to download app2luggage...."
@@ -227,88 +249,87 @@ if ! [ -f ./app2luggage.rb ] ; then
     fi
 fi
 
-# Download the latest version of firefox
-echo "Attempting to download latest OS X version of FireFox...."
-start_link="http://www.macupdate.com"
-mid_link="/app/mac/10700/firefox"
 
-# pick a version to downlaod
-if [ "${download_latest_firefox_version}" == "YES" ] ; then 
-    # picks the latest including beta releases using the head command.
-    end_link=`curl ${start_link}${mid_link} 2> /dev/null |  grep 'id="downloadlink' | head -n 1 | awk -F 'href="' '{print $2}' | awk -F '"' '{print $1}'`
+
+if [ "${use_exisitng_copy_of_firefox}" == "YES" ] ; then
+    echo "Using existing copy of FireFox (new copy will not be downloaded)."
 else
-    # this simply picks the last available download link rather than first by using tail rather than head.
-    end_link=`curl ${start_link}${mid_link} 2> /dev/null |  grep 'id="downloadlink' | tail -n 1 | awk -F 'href="' '{print $2}' | awk -F '"' '{print $1}'`
-fi
+    
+    # - - - - - - - - - - - - - - - - 
+    # get latest copy of FireFox.app  
+    # - - - -- - - - - - - - - - - - -
+    
+    # Download the latest version of firefox
+    echo "Attempting to download latest OS X version of FireFox...."
+    start_link="http://www.macupdate.com"
+    mid_link="/app/mac/10700/firefox"
 
-download_link="${start_link}${end_link}"
-echo "    Download Link : $download_link"
-user_agent="Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9b5) Gecko/2008032619 Firefox/3.0b5 "
-output_document_path=/tmp/Firefox_`date "+%Y-%m-%d_%H-%M-%S"`.dmg
-wget --user-agent="${user_agent}" --output-document="${output_document_path}" ${download_link} 
+    # pick a version to downlaod
+    if [ "${download_latest_firefox_version}" == "YES" ] ; then 
+        # picks the latest including beta releases using the head command.
+        end_link=`curl ${start_link}${mid_link} 2> /dev/null |  grep 'id="downloadlink' | head -n 1 | awk -F 'href="' '{print $2}' | awk -F '"' '{print $1}'`
+    else
+        # this simply picks the last available download link rather than first by using tail rather than head.
+        end_link=`curl ${start_link}${mid_link} 2> /dev/null |  grep 'id="downloadlink' | tail -n 1 | awk -F 'href="' '{print $2}' | awk -F '"' '{print $1}'`
+    fi
+
+    download_link="${start_link}${end_link}"
+    echo "    Download Link : $download_link"
+    user_agent="Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9b5) Gecko/2008032619 Firefox/3.0b5 "
+    output_document_path=/tmp/Firefox_`date "+%Y-%m-%d_%H-%M-%S"`.dmg
+    wget --user-agent="${user_agent}" --output-document="${output_document_path}" ${download_link} 
 
 
-## --progress=dot 
-## 2>&1 | sed s'/^/    /'
+    ## --progress=dot 
+    ## 2>&1 | sed s'/^/    /'
 
-
-# check the download completed succesfully
-if [ $? != 0 ] ; then
-    echo "Download of Firefox failed. Please try to download manually."
-    export exit_value=-1
-    clean_exit
-fi
-
-# mount the DMG and copy into this directory
-export image_mount_point=`mktemp -d /tmp/latest_firefox_mount_point.XXXXX`
-hdiutil attach "${output_document_path}" -quiet -nobrowse -mountpoint "${image_mount_point}/"
-if [ $? != 0 ] ; then
-    echo "Unable to mount the Firefox DMG which was downloaded."
-    echo "Please try running this script again."
-    export exit_value=-1
-    clean_exit
-fi
-
-# remove old version if we got this far.
-if [ -e ./Firefox.app ] ; then
-    rm -R ./Firefox.app
+    # check the download completed succesfully
     if [ $? != 0 ] ; then
-        echo "Unable to remove the copy of Firefox in this directory."
-        echo "Please manually remove and then try again."
+        echo "Download of Firefox failed. Please try to download manually."
         export exit_value=-1
         clean_exit
     fi
-fi
 
-# remove old build directory if we got this far.
-if [ -d ./${build_package_id} ] ; then
-    rm -R ./${build_package_id}
+    # mount the DMG and copy into this directory
+    export image_mount_point=`mktemp -d /tmp/latest_firefox_mount_point.XXXXX`
+    hdiutil attach "${output_document_path}" -quiet -nobrowse -mountpoint "${image_mount_point}/"
     if [ $? != 0 ] ; then
-        echo "Unable to remove the previous build directory."
-        echo "Please manually remove and then try again."
+        echo "Unable to mount the Firefox DMG which was downloaded."
+        echo "Please try running this script again."
         export exit_value=-1
         clean_exit
     fi
+
+    # remove old version if we got this far.
+    if [ -e ./Firefox.app ] ; then
+        rm -R ./Firefox.app
+        if [ $? != 0 ] ; then
+            echo "Unable to remove the copy of Firefox in this directory."
+            echo "Please manually remove and then try again."
+            export exit_value=-1
+            clean_exit
+        fi
+    fi
+
+    # copy out fire fox from the DMG
+    cp -r "${image_mount_point}/Firefox.app" ./Firefox.app
+    if [ $? != 0 ] ; then
+        echo "Error coping Firefox from the DMG to this directory."
+        export exit_value=-1
+        clean_exit
+    fi
+
+    # it may be good idea to alter the permissions this will need to be sorted.
+
+    # unmount the DMG
+    hdiutil detach "${image_mount_point}" -quiet
+    if [ $? != 0 ] ; then
+        echo "Error un-mounting the Firefox from the DMG."
+        export exit_value=-1
+        clean_exit
+    fi
+
 fi
-
-# copy out fire fox from the DMG
-cp -r "${image_mount_point}/Firefox.app" ./Firefox.app
-if [ $? != 0 ] ; then
-    echo "Error coping Firefox from the DMG to this directory."
-    export exit_value=-1
-    clean_exit
-fi
-
-# it may be good idea to alter the permissions this will need to be sorted.
-
-# unmount the DMG
-hdiutil detach "${image_mount_point}" -quiet
-if [ $? != 0 ] ; then
-    echo "Error un-mounting the Firefox from the DMG."
-    export exit_value=-1
-    clean_exit
-fi
-
 
 # - - - - - - - - - - - - - - - - 
 # make alteration to Firefox.app
@@ -317,7 +338,6 @@ fi
 # default settings for new user templates so that using the Mac OS X network proxy settings are enabled.
 
 # Check that the file we are will write to exits
-
 
 if ! [ -f ./Firefox.app/Contents/MacOS/defaults/pref/channel-prefs.js ] ; then
     echo "Error unable to locate the preference file for updates."
@@ -342,6 +362,17 @@ fi
 # If we have been instructed to build the package.
 if [ "${proceed_with_building_pacakge}" == "YES" ] ; then
 
+    # remove old build directory if we got this far.
+    if [ -d ./${build_package_id} ] ; then
+        rm -R ./${build_package_id}
+        if [ $? != 0 ] ; then
+            echo "Unable to remove the previous build directory."
+            echo "Please manually remove and then try again."
+            export exit_value=-1
+            clean_exit
+        fi
+    fi
+    
 	# build it with app2luggage
 	full_path_to_firefox="`pwd`/Firefox.app"
 	./app2luggage.rb --application="${full_path_to_firefox}" --package-id="${build_package_id}" --reverse-domain=${1}  --remove-exisiting-version
