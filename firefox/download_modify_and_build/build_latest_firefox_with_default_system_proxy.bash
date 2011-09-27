@@ -14,41 +14,42 @@
 #    - luggage
 #    - wget
 #    - curl (no longer used)
-#    - interent access for your system(s)
+#    - internet access for your system(s)
 #
 #
 # Notes : 
 #    If you use this script behind a proxy ensure that you have exported your proxy 
 #    settings to the shell which runs this script. If it is not working behind a proxy
-#    then try on an internet connecton without a proxy. Any suggetions on improving
+#    then try on an internet connection without a proxy. Any suggestions on improving
 #    proxy support are welcome. Export example which should work is listed below : 
 #    
 #      - export http_proxy="http://proxy:port"
 #      - export https_proxy="http://proxy:port"
 #    
-#    example usage for this script : /path/to/this/script.bash com.yourdomain
+#    Example usage for this script : /path/to/this/script.bash com.yourdomain
 #
 # Script version :
-#    1.0 : initial release (basic implementation)
-#    1.1 : added some additional checks, options and assistance relating to wget and make (developer tools).
-#    1.2 : added some ownership changes to the installed application (now admin has write access).
-#    1.3 : now downloads the very latest version availible from MacUpdate.
-#    1.4 : fixed bug with regards checking for make being insalled on the system.
-#    1.5 : using wget to download app2luggage.rb rather than curl.
-#    1.6 : added option to use an existing copy of FireFox.app (just modify and build package)
+#    1.0 : Initial release (basic implementation)
+#    1.1 : Added some additional checks, options and assistance relating to wget and make (developer tools).
+#    1.2 : Added some ownership changes to the installed application (now admin has write access).
+#    1.3 : Now downloads the very latest version available from MacUpdate.
+#    1.4 : Fixed bug with regards checking for make being installed on the system.
+#    1.5 : Using wget to download app2luggage.rb rather than curl.
+#    1.6 : Added option to use an existing copy of FireFox.app (just modify and build package).
+#    1.7 : Added a check for trollop. Minor changes to default settings within script.
 
 # - - - - - - - - - - - - - - - - 
 # script settings
 # - - - -- - - - - - - - - - - - -
 
-# pagkge ID for output package (no spaces)
+# package ID for output package (no spaces)
 build_package_id="Firefox_defaults_to_system_proxy"
 
 # overwrite old copy of firefox? ("YES"/"NO")
-overwirte_old_copy="NO"
+overwirte_old_copy="YES"
 
-# remove firefox app and build direcotry when finished? ("YES"/"NO")
-clean_up_build_directory_and_firefox_app="NO"
+# remove firefox app and build directory when finished? ("YES"/"NO")
+clean_up_build_directory_and_firefox_app="YES"
 
 # build a package and put it into a dmg
 proceed_with_building_pacakge="YES"
@@ -56,11 +57,11 @@ proceed_with_building_pacakge="YES"
 # download latest version? ("YES"/"NO) - if set to "NO" then an older version will be downloaded.
 download_latest_firefox_version="YES"
 
-# use exisiting copy of FireFox within this directory ("YES"/"NO") - if enabled no new version will be downloaded
+# use existing copy of FireFox within this directory ("YES"/"NO") - if enabled no new version will be downloaded
 use_exisitng_copy_of_firefox="NO"
 
 # - - - - - - - - - - - - - - - - 
-# calculate some varibles and add clean up function
+# calculate some variables and add clean up function
 # - - - -- - - - - - - - - - - - -
 
 # work out where we are in the file system
@@ -164,6 +165,20 @@ if ! [ -d /usr/local/share/luggage ] ; then
     clean_exit
 fi
 
+# check that trollop is installed if building a package is enabled.
+if [ "${proceed_with_building_pacakge}" == "YES" ] ; then
+    if ! [ `gem list --local | grep "trollop" | wc -l | awk '{print $1}'` -ge 1 ] ; then
+	 echo "The ruby gem called \"trollop\" is required for building packages."
+         echo "In order to install the trollop gem on your system please issue the command :"
+	 echo ""
+	 echo "  $ gem install trollop"
+	 echo ""
+	 echo "Then try running this script again."
+	 export exit_value=-1
+    	 clean_exit
+    fi
+fi
+
 
 # check that wget is installed on this system
 which wget > /dev/null
@@ -171,7 +186,7 @@ if [ $? != 0 ] ; then
     echo "This script requires that you have wget installed on your system."
     echo "Just a couple of possible options are listed below : "
     echo ""
-	echo "     (1) Download and install the pacakge from the following URL :"
+	echo "     (1) Download and install the package from the following URL :"
 	echo "         http://www.merenbach.com/software/wget"
 	echo ""
 	echo "     (2) Download and install Macports :"
@@ -264,7 +279,7 @@ else
     start_link="http://www.macupdate.com"
     mid_link="/app/mac/10700/firefox"
 
-    # pick a version to downlaod
+    # pick a version to download
     if [ "${download_latest_firefox_version}" == "YES" ] ; then 
         # picks the latest including beta releases using the head command.
         end_link=`curl ${start_link}${mid_link} 2> /dev/null |  grep 'id="downloadlink' | head -n 1 | awk -F 'href="' '{print $2}' | awk -F '"' '{print $1}'`
@@ -283,7 +298,7 @@ else
     ## --progress=dot 
     ## 2>&1 | sed s'/^/    /'
 
-    # check the download completed succesfully
+    # check the download completed successfully
     if [ $? != 0 ] ; then
         echo "Download of Firefox failed. Please try to download manually."
         export exit_value=-1
@@ -382,7 +397,7 @@ if [ "${proceed_with_building_pacakge}" == "YES" ] ; then
 		clean_exit
 	fi
 
-	# move the built dmg into this direcotry (just change the output name / destination if required - also possibly remove the -i flag)
+	# move the built dmg into this directory (just change the output name / destination if required - also possibly remove the -i flag)
 	# mv ./${build_package_id}/${build_package_id}-`date "+%Y%m%d"`.dmg ./${build_package_id}-`date "+%Y-%m-%d_%H-%M-%S"`.dmg
 	mv -i ./${build_package_id}/${build_package_id}-`date "+%Y%m%d"`.dmg ./
 	if [ $? != 0 ] ; then
@@ -396,6 +411,5 @@ fi
 # clean up the mess
 export exit_value=0
 clean_exit
-
 
 
