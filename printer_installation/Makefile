@@ -36,6 +36,11 @@ PAYLOAD=\
 #   to match your printer name (from the preflight script) and you should be fine.
 
 pack-hp-ppd: l_etc_cups_ppd
-	@sudo ${CP} ./psm_HHS_Office_9040.ppd ${WORK_D}/etc/cups/ppd/psm_HHS_Office_9040.ppd
-	@sudo chmod 644 ${WORK_D}/etc/cups/ppd/psm_HHS_Office_9040.ppd
-	@sudo chown root:_lp ${WORK_D}/etc/cups/ppd/psm_HHS_Office_9040.ppd
+	@sudo ${CP} ./psm_HHS_Office_9040.ppd ${WORK_D}/private/etc/cups/ppd/psm_HHS_Office_9040.ppd
+	@sudo chmod 644 ${WORK_D}/private/etc/cups/ppd/psm_HHS_Office_9040.ppd
+	@sudo chown root:_lp ${WORK_D}/private/etc/cups/ppd/psm_HHS_Office_9040.ppd
+
+l_etc_cups_ppd: l_private_etc
+	@sudo mkdir -p ${WORK_D}/private/etc/cups/ppd
+	@sudo chown -R root:_lp ${WORK_D}/private/etc/cups/ppd
+	@sudo chmod -R 755 ${WORK_D}/private/etc/cups/ppd
