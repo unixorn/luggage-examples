@@ -45,7 +45,7 @@
 # - - - -- - - - - - - - - - - - -
 
 # package ID for output package (no spaces)
-if [ "${build_package_id}" != "" ] ; then
+if [ "${build_package_id}" == "" ] ; then
     build_package_id="Firefox_defaults_to_system_proxy"
 fi
 
