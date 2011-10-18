@@ -37,28 +37,43 @@
 #    1.5 : Using wget to download app2luggage.rb rather than curl.
 #    1.6 : Added option to use an existing copy of FireFox.app (just modify and build package).
 #    1.7 : Added a check for trollop. Minor changes to default settings within script.
+#    1.8 : Added a check for enviroment varible settings which may have been exported.
+
 
 # - - - - - - - - - - - - - - - - 
 # script settings
 # - - - -- - - - - - - - - - - - -
 
 # package ID for output package (no spaces)
-build_package_id="Firefox_defaults_to_system_proxy"
+if [ "${build_package_id}" != "" ] ; then
+    build_package_id="Firefox_defaults_to_system_proxy"
+fi
 
 # overwrite old copy of firefox? ("YES"/"NO")
-overwirte_old_copy="YES"
+if [ "${overwirte_old_copy}" != "YES" ] && [ "${overwirte_old_copy}" != "NO" ] ; then
+    overwirte_old_copy="YES"
+fi
 
 # remove firefox app and build directory when finished? ("YES"/"NO")
-clean_up_build_directory_and_firefox_app="YES"
+if [ "${clean_up_build_directory_and_firefox_app}" != "YES" ] && [ "${clean_up_build_directory_and_firefox_app}" != "NO" ] ; then
+    clean_up_build_directory_and_firefox_app="YES"
+fi
 
 # build a package and put it into a dmg
-proceed_with_building_pacakge="YES"
+if [ "${proceed_with_building_pacakge}" != "YES" ] && [ "${proceed_with_building_pacakge}" != "NO" ] ; then
+    proceed_with_building_pacakge="YES"
+fi
 
 # download latest version? ("YES"/"NO) - if set to "NO" then an older version will be downloaded.
-download_latest_firefox_version="YES"
+if [ "${download_latest_firefox_version}" != "YES" ] && [ "${download_latest_firefox_version}" != "NO" ] ; then
+    download_latest_firefox_version="YES"
+fi
 
 # use existing copy of FireFox within this directory ("YES"/"NO") - if enabled no new version will be downloaded
-use_exisitng_copy_of_firefox="NO"
+if [ "${use_exisitng_copy_of_firefox}" != "YES" ] && [ "${use_exisitng_copy_of_firefox}" != "NO" ] ; then
+    use_exisitng_copy_of_firefox="NO"
+fi
+
 
 # - - - - - - - - - - - - - - - - 
 # calculate some variables and add clean up function

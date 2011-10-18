@@ -1,12 +1,18 @@
 #!/bin/bash
 
 # This is an example script to build the latest version of FireFox.
-# In before running this script read the note below and make changes
-# to suite your build requirements.
+# Before running this script read the note(s) below and make approriate
+# changes to suite your build and network and post action requirements.
 
-# You will want to change reverse domain name. In addition, if you are
-# behind a proxy, you will want to uncomment those lines and complete the
-# details for your proxy server.
+# You will want to change reverse domain name (provided as an argument to the script).
+# In addition, if you are behind a proxy, you will want to uncomment those lines
+# and make changes which are relivent for yor systems network and proxy server.
+
+# Uncomment to set enviroment varibles (to override script defaults).
+# export build_package_id="Firefox_defaults_to_system_proxy"
+# export overwirte_old_copy="YES"
+# export clean_up_build_directory_and_firefox_app="YES"
+# export proceed_with_building_pacakge="YES"
 
 # If you are behind the proxy then issue the following commands : 
 # export http_proxy="http://user:pass@proxy:3128"
