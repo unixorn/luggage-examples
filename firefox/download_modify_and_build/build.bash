@@ -38,7 +38,11 @@ fi
 #               Should you uncommon, then ensure you test the script works prior automating.
 #               Also, prior to automating this script think about the security implications.
 # Modify the following lines appropriately and then modify and uncomment the following command : 
-# rsync `ls -rt ./ | grep .dmg | tail -n 1` \
-# user@server:"/Path\ to/FireFox-Dir/FireFox-`ls -rt ./ | grep .dmg | tail -n 1 | awk -F "-" '{print $2}'`"
+# echo -n "Upload .dmg to server ? [Y/n] : "
+# read result
+# if [ "${result}" == "" ] || [ "${result}" == "y" ] || [ "${result}" == "yes" ] || [ "${result}" == "Y" ] || [ "${result}" == "YES" ] ; then
+# 	rsync `ls -rt ./ | grep .dmg | tail -n 1` \
+# 	user@server:"/Path\ to/FireFox-Dir/FireFox-`ls -rt ./ | grep .dmg | tail -n 1 | awk -F "-" '{print $2}'`"
+# fi
 
 
