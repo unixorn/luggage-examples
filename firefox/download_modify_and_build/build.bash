@@ -26,7 +26,7 @@ cd "`dirname \"$0\"`"
 
 if [ ${?} != 0 ] ; then
 	echo "FireFox Build Failed."
-	echo "Please examine the output make changes and then try again."
+	echo "Please examine the output, make changes and then try again."
 	exit -1
 fi
 
