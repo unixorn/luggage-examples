@@ -221,7 +221,7 @@ fi
 which make > /dev/null
 if [ $? != 0 ] && [ "${proceed_with_building_pacakge}" == "YES" ] ; then
     echo "This script requires that you have make installed on your system."
-    echo "Just one possible options is listed below : "
+    echo "Just a couple of possible options for installation are listed below : "
     echo ""
     echo "     (1) Download and install the developer tools package from Apple (recommended) :"
     echo "         http://developer.apple.com/"
