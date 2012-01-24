@@ -411,7 +411,7 @@ if [ "${proceed_with_building_pacakge}" == "YES" ] ; then
 	# build it with app2luggage
 	full_path_to_firefox="`pwd`/Firefox.app"
 	additional_build_options=""
-	if [ "${package_install_will_overwrite_existing_copy}" == "YES" ] ; 
+	if [ "${package_install_will_overwrite_existing_copy}" == "YES" ] ; then
 		# run app2luggage with the --remove-existing-version option
 		./app2luggage.rb --application="${full_path_to_firefox}" --package-id="${build_package_id}" --reverse-domain=${1}  --remove-exisiting-version
 		if [ $? != 0 ] ; then
