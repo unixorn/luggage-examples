@@ -38,7 +38,7 @@
 #    1.6 : Added option to use an existing copy of FireFox.app (just modify and build package).
 #    1.7 : Added a check for trollop. Minor changes to default settings within script.
 #    1.8 : Added a check for enviroment varible settings which may have been exported.
-
+#    1.9 : Adds an option (enviroment varible) which can prevent install if there is an exisiting version.
 
 # - - - - - - - - - - - - - - - - 
 # script settings
@@ -74,6 +74,11 @@ if [ "${use_exisitng_copy_of_firefox}" != "YES" ] && [ "${use_exisitng_copy_of_f
     use_exisitng_copy_of_firefox="NO"
 fi
 
+# Configure the install package to install even if there is an existing copy of FireFox on the destination system ("YES"/"NO")
+if  [ "${package_install_will_overwrite_existing_copy}" != "YES" ]  && [ "${package_install_will_overwrite_existing_copy}" != "NO" ] ; then
+	package_install_will_overwrite_existing_copy="YES"
+fi
+	
 
 # - - - - - - - - - - - - - - - - 
 # calculate some variables and add clean up function
@@ -182,25 +187,25 @@ fi
 
 # check that trollop is installed if building a package is enabled.
 if [ "${proceed_with_building_pacakge}" == "YES" ] ; then
-    if ! [ `gem list --local | grep "trollop" | wc -l | awk '{print $1}'` -ge 1 ] ; then
-	 echo "The ruby gem called \"trollop\" is required for building packages."
-         echo "In order to install the trollop gem on your system please issue the command :"
-	 echo ""
-	 echo "  $ gem install trollop"
-	 echo ""
-	 echo "Then try running this script again."
-	 export exit_value=-1
-    	 clean_exit
-    fi
+	if ! [ `gem list --local | grep "trollop" | wc -l | awk '{print $1}'` -ge 1 ] ; then
+		echo "The ruby gem called \"trollop\" is required for building packages."
+		echo "In order to install the trollop gem on your system please issue the command :"
+		echo ""
+		echo "  $ gem install trollop"
+		echo ""
+		echo "Then try running this script again."
+		export exit_value=-1
+		clean_exit
+	fi
 fi
 
 
 # check that wget is installed on this system
 which wget > /dev/null
 if [ $? != 0 ] ; then
-    echo "This script requires that you have wget installed on your system."
-    echo "Just a couple of possible options are listed below : "
-    echo ""
+	echo "This script requires that you have wget installed on your system."
+	echo "Just a couple of possible options are listed below : "
+	echo ""
 	echo "     (1) Download and install the package from the following URL :"
 	echo "         http://www.merenbach.com/software/wget"
 	echo ""
@@ -213,33 +218,33 @@ if [ $? != 0 ] ; then
 	echo ""
 	echo "Once wget is installed and in your path 'echo \$PATH', then try"
 	echo "running this script again."
-    export exit_value=-1
-    clean_exit
+	export exit_value=-1
+	clean_exit
 fi
 
 # check that make is installed on this system
 which make > /dev/null
 if [ $? != 0 ] && [ "${proceed_with_building_pacakge}" == "YES" ] ; then
-    echo "This script requires that you have make installed on your system."
-    echo "Just a couple of possible options for installation are listed below : "
-    echo ""
-    echo "     (1) Download and install the developer tools package from Apple (recommended) :"
-    echo "         http://developer.apple.com/"
-    echo ""
-    echo "     (2) Download and install fink (intel binary install only for Mac OS X 10.5) :"
-    echo "         http://finkproject.org/"
-    echo ""
-    echo "         To install make then issue the following command :"
-    echo ""
-    echo "              $ sudo fink -b install make"
-    echo ""
-    echo "If you only require the output of the application and not installer package then,"
-    echo "disable the build process within this script configuration settings."
-    echo ""
-    echo "Once the developer tools are installed and that make is within"
-    echo "your path 'echo \$PATH', then try running this script again."
-    export exit_value=-1
-    clean_exit
+	echo "This script requires that you have make installed on your system."
+	echo "Just one possible options is listed below : "
+	echo ""
+	echo "     (1) Download and install the developer tools package from Apple (recommended) :"
+	echo "         http://developer.apple.com/"
+	echo ""
+	echo "     (2) Download and install fink (intel binary install only for Mac OS X 10.5) :"
+	echo "         http://finkproject.org/"
+	echo ""
+	echo "         To install make then issue the following command :"
+	echo ""
+	echo "              $ sudo fink -b install make"
+	echo ""
+	echo "If you only require the output of the application and not installer package then,"
+	echo "disable the build process within this script configuration settings."
+	echo ""
+	echo "Once the developer tools are installed and that make is within"
+	echo "your path 'echo \$PATH', then try running this script again."
+	export exit_value=-1
+	clean_exit
 fi
 
 
@@ -405,11 +410,23 @@ if [ "${proceed_with_building_pacakge}" == "YES" ] ; then
     
 	# build it with app2luggage
 	full_path_to_firefox="`pwd`/Firefox.app"
-	./app2luggage.rb --application="${full_path_to_firefox}" --package-id="${build_package_id}" --reverse-domain=${1}  --remove-exisiting-version
-	if [ $? != 0 ] ; then
-		echo "Error during building of the package. You may need to install some gems?"
-		export exit_value=-1
-		clean_exit
+	additional_build_options=""
+	if [ "${package_install_will_overwrite_existing_copy}" == "YES" ] ; 
+		# run app2luggage with the --remove-existing-version option
+		./app2luggage.rb --application="${full_path_to_firefox}" --package-id="${build_package_id}" --reverse-domain=${1}  --remove-exisiting-version
+		if [ $? != 0 ] ; then
+			echo "Error during building of the package. You may need to install some gems?"
+			export exit_value=-1
+			clean_exit
+		fi
+	else
+		# run app2luggage with the no-overwrite option
+		./app2luggage.rb --application="${full_path_to_firefox}" --package-id="${build_package_id}" --reverse-domain=${1}  --no-overwrite
+		if [ $? != 0 ] ; then
+			echo "Error during building of the package. You may need to install some gems?"
+			export exit_value=-1
+			clean_exit
+		fi
 	fi
 
 	# move the built dmg into this directory (just change the output name / destination if required - also possibly remove the -i flag)

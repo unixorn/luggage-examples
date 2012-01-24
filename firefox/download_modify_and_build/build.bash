@@ -13,6 +13,7 @@
 # export overwirte_old_copy="YES"
 # export clean_up_build_directory_and_firefox_app="YES"
 # export proceed_with_building_pacakge="YES"
+# export package_install_will_overwrite_existing_copy="YES"
 
 # If you are behind the proxy then issue the following commands : 
 # export http_proxy="http://user:pass@proxy:3128"
