@@ -8,7 +8,7 @@
 #    Will download latest Mac OS X version of FireFox
 #    Updates default so that the Mac OS X system proxy is used.
 #    Builds package installer package for this modified version of FireFox
-#    It is easy to alter the 
+#    Modify this script to alter other various other settings.
 #
 # Requirements : 
 #    - luggage
