@@ -36,7 +36,7 @@ fi
 
 # Example (1) : If you would like to use rsync to copy the latest build to remote server.
 #               Please note that if you uncomment the command (two lines) a password may be required. 
-#               Should you uncommon, then ensure you test the script works prior automating.
+#               Should you uncommnet, then ensure you test the script works prior automating.
 #               Also, prior to automating this script think about the security implications.
 # Modify the following lines appropriately and then modify and uncomment the following command : 
 # echo -n "Upload .dmg to server ? [Y/n] : "
