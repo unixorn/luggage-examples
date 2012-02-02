@@ -2,7 +2,7 @@
 
 # This is an example script to build the latest version of FireFox.
 # Before running this script read the note(s) below and make approriate
-# changes to suite your build and network and post action requirements.
+# changes to suite your build, network and post action requirements.
 
 # You will want to change reverse domain name (provided as an argument to the script).
 # In addition, if you are behind a proxy, you will want to uncomment those lines
