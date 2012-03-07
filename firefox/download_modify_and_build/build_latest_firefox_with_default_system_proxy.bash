@@ -37,8 +37,8 @@
 #    1.5 : Using wget to download app2luggage.rb rather than curl.
 #    1.6 : Added option to use an existing copy of FireFox.app (just modify and build package).
 #    1.7 : Added a check for trollop. Minor changes to default settings within script.
-#    1.8 : Added a check for enviroment varible settings which may have been exported.
-#    1.9 : Adds an option (enviroment varible) which can prevent install if there is an exisiting version.
+#    1.8 : Added a check for environment variable settings which may have been exported.
+#    1.9 : Adds an option (environment variable) which can prevent install if there is an existing version.
 
 # - - - - - - - - - - - - - - - - 
 # script settings
