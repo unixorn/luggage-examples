@@ -1,0 +1,20 @@
+Required:
+
+The Luggage - https://github.com/unixorn/luggage/wiki
+Xcode (For the Make functionality)
+Makefile - https://github.com/natewalck/LuggagePackages/tree/master/LabStats
+
+Directions:
+1.  Clone this git repo to your local machine.
+
+2.  Put the new OS X native LabStats installer in the same directory as the Makefile.  Make sure the LABSTATS_PACKAGE_NAME variable in the Makefile is correct.
+
+3.  Edit the host.txt file in the root of the Labstats installer package and make sure that it matches your server ip/port.
+
+4.  Edit the Makefile and make sure the PACKAGE_VERSION number is correct.
+
+5.  From Terminal, cd into the directory where you put the Makefile and type 'make pkg'.
+
+6.  It *should* spit out a proper Apple Package and be good to go.
+
+Many thanks to frogor and Allister on ##osx-server 

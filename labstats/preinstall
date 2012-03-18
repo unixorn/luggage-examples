@@ -1,0 +1,35 @@
+#!/bin/bash
+
+#Step 1: Kill any exising processes
+killall mono
+killall LabStatsClient
+
+#step 1.5 Stop any agents. 
+launchctl unload /Library/LaunchDaemons/LabStats.plist
+#launchctl unload -D all /Library/LaunchAgents/LabStats.plist
+#launchctl unload /Library/LaunchAgents/LabStats.plist
+
+#Step 2: Delete any existing LabStats resources 
+if [ -d "/Applications/LabStats" ]; then
+	rm -rf "/Applications/LabStats"
+fi
+
+if [ -d "/Library/StartupItems/CLSService" ]; then
+	rm -rf "/Library/StartupItems/CLSService"
+fi
+
+if [ -d "/Library/Application Support/LabStats" ]; then
+	rm -rf "/Library/Application Support/LabStats"
+fi
+
+if [ -d "/Library/StartupItems/CLSService" ]; then
+	rm -rf "/Library/StartupItems/CLSService"
+fi
+
+if [ "/Library/LaunchDaemons/LabStats.plist" ]; then 
+	rm -rf "/Library/LaunchDaemons/LabStats.plist"
+fi
+
+if [ "/Library/LaunchAgents/LabStats.plist" ]; then 
+	rm -rf "/Library/LaunchAgents/LabStats.plist"
+fi

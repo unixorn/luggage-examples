@@ -1,0 +1,6 @@
+# Can ignore specific files
+.DS_Store
+._.DS_Store
+*.pkg
+*.dmg
+*.tar.bz2

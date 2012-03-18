@@ -1,0 +1,7 @@
+#!/bin/bash
+
+launchctl load /Library/LaunchDaemons/LabStats.plist
+# RJS- Commented this out; it runs the UserSpace as root, which is odd
+# The other option is to find out a way to 
+# launch this for each running user
+# launchctl load /Library/LaunchAgents/LabStats.plist
