@@ -1,0 +1,5 @@
+To use this Makefile, you need to do the following:
+1.  Customized the Reverse domain for your company
+2.  Set PACKAGE_VERSION to the latest version
+3.  In FirefoxURL, make sure the ?product=firefox-10.0.3esr is set to the latest version.
+4.  Rename your CCK folder {ec8030f7-c20a-464f-9b0e-13a3a9e97384} and place it into the same directory as the Makefile.  For more information on how to use the CCK with Firefox 10, see https://groups.google.com/group/macenterprise/browse_thread/thread/614aab9bde90485a?pli=1#
