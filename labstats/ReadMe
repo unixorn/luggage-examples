@@ -2,7 +2,6 @@ Required:
 
 The Luggage - https://github.com/unixorn/luggage/wiki
 Xcode (For the Make functionality)
-Makefile - https://github.com/natewalck/LuggagePackages/tree/master/LabStats
 
 Directions:
 1.  Clone this git repo to your local machine.
