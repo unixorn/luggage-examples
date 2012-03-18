@@ -1,0 +1,4 @@
+To use this package to deliver your munki certs, you must do the following:
+
+1.  Put your Certificate/Private key for the client into munki/certs/munkiclients.pem
+2.  Customize the Makefile to your liking
