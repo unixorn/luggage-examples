@@ -1,0 +1,5 @@
+To use this package, do the following:
+
+1.  Generate a basic auth username/password as per http://code.google.com/p/munki/wiki/SecuringMunkiUsingBasicAuthentication#Configuring_the_Clients_to_Use_a_Password
+2.  Confirm other settings in ManagedInstalls.plist are correct for your environment
+3.  Customize Makefile to your liking.
