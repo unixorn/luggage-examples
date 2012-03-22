@@ -19,7 +19,9 @@
 #  Created: 7/19/2011
 #  Last Modified: 7/19/2011
 #
-#  Description:  This Makefile will download the version of Facter specified
+#  Description: NOTE: this process should no longer be necessary, as the vendor
+# 	 provides packages here: http://downloads.puppetlabs.com/mac/
+# 	 This Makefile will download the version of Facter specified
 #    in the PACKAGE_VERSION variable from the Puppet Labs website, untar it,
 #    and then install the source files into the Mac-specific locations.  
 #    The MAJOR and MINOR versions must be specified for the Info.plist file
@@ -48,7 +50,7 @@ FACTERURL=http://downloads.puppetlabs.com/facter/${FACTERFILE}.tar.gz
 
 # The unpack-facter rule will pull the version of the Facter source specified
 #    by PACKAGE_VERSION into the directory where the Makefile is located. From
-#    there we untar it to a directory named puppet-(PACKAGE_VERSION)
+#    there we untar it to a directory named facter-(PACKAGE_VERSION)
 unpack-facter-${FACTERFILE}:
 	curl ${FACTERURL} -o ${FACTERFILE}.tar.gz
 	@sudo ${TAR} xzf ${FACTERFILE}.tar.gz

@@ -20,7 +20,9 @@
 #  Created: 12/17/2010
 #  Last Modified: 7/19/2011
 #
-#  Description:  This Makefile will download the version of Puppet specified
+#  Description: NOTE: this process should no longer be necessary, as the vendor
+# 	 provides packages here: http://downloads.puppetlabs.com/mac/
+# 	 This Makefile will download the version of Puppet specified
 #    in the PACKAGE_VERSION variable from the Puppet Labs website, untar it,
 #    and then install the source files into the Mac-specific locations.  
 #    The MAJOR and MINOR versions must be specified for the Info.plist file
