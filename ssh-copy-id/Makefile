@@ -47,7 +47,17 @@ unpack-binary-and-manpage-${UTIL}:
 	curl ${UTILURL} -o ${UTIL}.tar.gz
 	@sudo ${TAR} xzf ${UTIL}.tar.gz
 	mv openssh-${PACKAGE_VERSION}/contrib/ssh-* .
-# shouldn't be necessary if the binary/man page don't have hyphens in their name 
+# this may be allowed in the master luggage.make, haven't merged branch as of 23 March 2012
+l_usr_lcl_share_man: l_usr_local_share
+	@sudo mkdir -p ${WORK_D}/usr/local/share/man
+	@sudo chown -R root:wheel ${WORK_D}/usr/local/share/man
+	@sudo chmod -R 0755 ${WORK_D}/usr/local/share/man
+
+l_usr_lcl_man1: l_usr_lcl_share_man
+	@sudo mkdir -p ${WORK_D}/usr/local/share/man/man1
+	@sudo chown -R root:wheel ${WORK_D}/usr/local/share/man/man1
+	@sudo chmod -R 0755 ${WORK_D}/usr/local/share/man/man1
+# wouldn't have been necessary if the binary/man page don't have hyphens in their name 
 pack-usr-local-bin-ssh-copy-id:  l_usr_local_bin
 	@sudo ${CP} ./ssh-copy-id ${WORK_D}/usr/local/bin/
 	@sudo chown root:wheel ${WORK_D}/usr/local/bin/
