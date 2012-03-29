@@ -81,5 +81,5 @@ $NETSET -setnetworkserviceenabled FireWire off
 
 # Wipe feet
 /bin/rm -f /Library/LaunchDaemons/com.afp548.instaDMGd.plist
-/bin/rm -f /Library/LaunchDaemons/com.afp548.networkUp.plist
+/bin/rm -f /Library/LaunchAgents/com.afp548.networkUp.plist
 rm $0
