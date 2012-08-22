@@ -1,0 +1,23 @@
+#!/bin/bash
+
+FLASHBALL=/tmp/flash_player_snapshot.tar
+
+ensure_running_as_root() {
+	if [ ${UID} != 0 ] ; then exec sudo $0 $*; fi
+}
+
+ensure_running_as_root
+
+echo "FLASHBALL: ${FLASHBALL}"
+pushd /
+tar cvf ${FLASHBALL} /Library/Application\ Support/Adobe/Flash\ Player\ Install\ Manager \
+	/Library/Internet\ Plug-Ins/Flash\ Player.plugin \
+	/Library/Internet\ Plug-Ins/flashplayer.xpt \
+	/Library/LaunchDaemons/com.adobe.fpsaud.plist \
+	/Library/PreferencePanes/Flash\ Player.prefPane
+
+popd
+mv ${FLASHBALL} .
+pbzip2 -9v flash_player_snapshot.tar
+chown ${SUDO_USER} flash_player_snapshot.tar.bz2
+
