@@ -39,6 +39,7 @@
 #    1.7 : Added a check for trollop. Minor changes to default settings within script.
 #    1.8 : Added a check for environment variable settings which may have been exported.
 #    1.9 : Adds an option (environment variable) which can prevent install if there is an existing version.
+#    2.0 : Adds a varible which contains the version of FireFox which we will be building.
 
 # - - - - - - - - - - - - - - - - 
 # script settings
@@ -365,6 +366,18 @@ else
     fi
 
 fi
+
+
+# Check the version of FireFox for which we will be building a package.
+if ! [ -f ./Firefox.app/Contents/Info.plist ] ; then
+    echo "Error unable to locate the Info.plist file for determining version of FireFox."
+    export exit_value=-1
+    clean_exit
+else
+	build_firefox_version=`cat ./Firefox.app/Contents/Info.plist | grep -A 1 "<key>CFBundleShortVersionString</key>" | tail -n 1 | awk -F "<string>" '{print $2}' | awk -F "</string>" '{print $1}'`
+fi
+
+
 
 # - - - - - - - - - - - - - - - - 
 # make alteration to Firefox.app
