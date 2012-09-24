@@ -40,6 +40,7 @@
 #    1.8 : Added a check for environment variable settings which may have been exported.
 #    1.9 : Adds an option (environment variable) which can prevent install if there is an existing version.
 #    2.0 : Adds a varible which contains the version of FireFox which we will be building.
+#    2.1 : Adds a check for the version of FireFox which is availible prior to downloading.
 
 # - - - - - - - - - - - - - - - - 
 # script settings
@@ -79,6 +80,11 @@ fi
 if  [ "${package_install_will_overwrite_existing_copy}" != "YES" ]  && [ "${package_install_will_overwrite_existing_copy}" != "NO" ] ; then
 	package_install_will_overwrite_existing_copy="YES"
 fi
+
+# Keep record of version which was last built ("YES"/"NO")
+if  [ "${keep_version_build_file_record}" != "YES" ] && [ "${keep_version_build_file_record}" != "NO" ] ; then
+	keep_version_build_file_record="YES"
+fi
 	
 
 # - - - - - - - - - - - - - - - - 
@@ -105,6 +111,8 @@ function clean_exit () {
     if [ -d ./Firefox.app ] &&  [ "${clean_up_build_directory_and_firefox_app}" == "YES" ] ; then 
             rm -R ./Firefox.app
     fi
+    # remove the firefox current version build txt file(s)
+    rm -f "${current_version_build_file}"
     # remove the firefox download
     rm -f "${output_document_path}"
     exit $exit_value
@@ -286,10 +294,21 @@ if ! [ -f ./app2luggage.rb ] ; then
 fi
 
 
+# version file storage varibles (file to store build version)
+last_version_build_file="${parent_folder}/last_build_version.txt"
+current_version_build_file="${parent_folder}/current_build_version.txt"
+last_version_built=`cat "${last_version_build_file}" 2> /dev/null`
+if [ $? != 0 ] ; then
+    echo "WARNING! : Unable to determine last built version of Firefox."
+    last_built_version="0.0.0"
+fi
+
+
 
 if [ "${use_exisitng_copy_of_firefox}" == "YES" ] ; then
     echo "Using existing copy of FireFox (new copy will not be downloaded)."
 else
+    
     
     # - - - - - - - - - - - - - - - - 
     # get latest copy of FireFox.app  
@@ -299,7 +318,7 @@ else
     echo "Attempting to download latest OS X version of FireFox...."
     start_link="http://www.macupdate.com"
     mid_link="/app/mac/10700/firefox"
-
+    
     # pick a version to download
     if [ "${download_latest_firefox_version}" == "YES" ] ; then 
         # picks the latest including beta releases using the head command.
@@ -313,8 +332,15 @@ else
     echo "    Download Link : $download_link"
     user_agent="Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9b5) Gecko/2008032619 Firefox/3.0b5 "
     output_document_path=/tmp/Firefox_`date "+%Y-%m-%d_%H-%M-%S"`.dmg
-    wget --user-agent="${user_agent}" --output-document="${output_document_path}" ${download_link} 
+    latest_availible_version=`(wget --spider --user-agent="${user_agent}" ${download_link} 2>&1| grep "Location:" | grep ".dmg" | awk -F "/firefox/releases/" '{print $2}' | awk -F "/" '{print $1}' ; exit \`echo $pipestatus | awk '{print $3}'\`)`
+    if [ $? != 0 ] ; then
+		echo "Unable to determine latest version of Firefox available on servers."
+		export exit_value=-2
+        clean_exit
+	fi
+    echo "    Download Link Version : $latest_availible_version"
 
+    wget --user-agent="${user_agent}" --output-document="${output_document_path}" ${download_link} 
 
     ## --progress=dot 
     ## 2>&1 | sed s'/^/    /'
@@ -374,7 +400,10 @@ if ! [ -f ./Firefox.app/Contents/Info.plist ] ; then
     export exit_value=-1
     clean_exit
 else
-	build_firefox_version=`cat ./Firefox.app/Contents/Info.plist | grep -A 1 "<key>CFBundleShortVersionString</key>" | tail -n 1 | awk -F "<string>" '{print $2}' | awk -F "</string>" '{print $1}'`
+	build_firefox_version=`cat ./Firefox.app/Contents/Info.plist | grep -A 1 "<key>CFBundleShortVersionString</key>" | tail -n 1 | awk -F "<string>" '{print $2}' | awk -F "</string>" '{print $1}'`	
+	if [ "${keep_version_build_file_record}" == "YES" ] ; then
+		echo ${build_firefox_version} > "${current_version_build_file}"
+	fi
 fi
 
 
@@ -449,6 +478,13 @@ if [ "${proceed_with_building_pacakge}" == "YES" ] ; then
 		# if we were unable to move the .dmg out of the build directory then
 		# disable clean up of the build directory and do not remove Firefox either.
 		clean_up_build_directory_and_firefox_app="NO"
+	else
+		# Update the buiild file version
+		if  [ "${keep_version_build_file_record}" == "YES" ] ; then
+			mv "${current_version_build_file}" "${last_version_build_file}"
+		else
+			rm -f "${last_version_build_file}"
+		fi
 	fi
 	
 fi
