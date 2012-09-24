@@ -40,7 +40,8 @@
 #    1.8 : Added a check for environment variable settings which may have been exported.
 #    1.9 : Adds an option (environment variable) which can prevent install if there is an existing version.
 #    2.0 : Adds a varible which contains the version of FireFox which we will be building.
-#    2.1 : Adds a check for the version of FireFox which is availible prior to downloading.
+#    2.1 : Adds a check for the version of FireFox which is available prior to downloading.
+#    2.2 : Adds a variable which may be set to stop the new default behavior of not downloading the same version which was last built.
 
 # - - - - - - - - - - - - - - - - 
 # script settings
@@ -70,6 +71,12 @@ fi
 if [ "${download_latest_firefox_version}" != "YES" ] && [ "${download_latest_firefox_version}" != "NO" ] ; then
     download_latest_firefox_version="YES"
 fi
+
+# download and build same copy again? ("YES"/"NO")
+if [ "${download_and_build_same_copy_again}" != "YES" ] && [ "${download_and_build_same_copy_again}" != "NO" ] ; then
+    download_and_build_same_copy_again="NO"
+fi
+
 
 # use existing copy of FireFox within this directory ("YES"/"NO") - if enabled no new version will be downloaded
 if [ "${use_exisitng_copy_of_firefox}" != "YES" ] && [ "${use_exisitng_copy_of_firefox}" != "NO" ] ; then
@@ -295,12 +302,13 @@ fi
 
 
 # version file storage varibles (file to store build version)
-last_version_build_file="${parent_folder}/last_build_version.txt"
+lastest_version_build_file="${parent_folder}/latest_build_version.txt"
 current_version_build_file="${parent_folder}/current_build_version.txt"
-last_version_built=`cat "${last_version_build_file}" 2> /dev/null`
+last_version_built=`cat "${lastest_version_build_file}" 2> /dev/null`
 if [ $? != 0 ] ; then
     echo "WARNING! : Unable to determine last built version of Firefox."
-    last_built_version="0.0.0"
+    echo "           Could be the first time you are building the FireFox package."
+    last_version_built="?.?.?"
 fi
 
 
@@ -315,7 +323,7 @@ else
     # - - - -- - - - - - - - - - - - -
     
     # Download the latest version of firefox
-    echo "Attempting to download latest OS X version of FireFox...."
+    echo "Attempting to check for latest version of FireFox...."
     start_link="http://www.macupdate.com"
     mid_link="/app/mac/10700/firefox"
     
@@ -329,7 +337,6 @@ else
     fi
 
     download_link="${start_link}${end_link}"
-    echo "    Download Link : $download_link"
     user_agent="Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9b5) Gecko/2008032619 Firefox/3.0b5 "
     output_document_path=/tmp/Firefox_`date "+%Y-%m-%d_%H-%M-%S"`.dmg
     latest_availible_version=`(wget --spider --user-agent="${user_agent}" ${download_link} 2>&1| grep "Location:" | grep ".dmg" | awk -F "/firefox/releases/" '{print $2}' | awk -F "/" '{print $1}' ; exit \`echo $pipestatus | awk '{print $3}'\`)`
@@ -338,8 +345,21 @@ else
 		export exit_value=-2
         clean_exit
 	fi
-    echo "    Download Link Version : $latest_availible_version"
 
+    echo "    Last successful built version : $last_version_built"
+    echo "    Latest available version      : $latest_availible_version"
+
+	# Should we download and build the latest and greatest availible verions from the remote servers?
+	if [ "$download_and_build_same_copy_again" == "NO" ] ; then 
+		if [ "${latest_availible_version}" == "${last_version_built}" ] ; then
+			echo "No updates available. Remote server has the same version as was previously built."
+			export exit_value=-255
+	        clean_exit
+		fi
+	fi
+
+    echo "Attempting to download latest OS X version of FireFox...."
+    echo "    Download Link : $download_link"
     wget --user-agent="${user_agent}" --output-document="${output_document_path}" ${download_link} 
 
     ## --progress=dot 
@@ -480,10 +500,10 @@ if [ "${proceed_with_building_pacakge}" == "YES" ] ; then
 		clean_up_build_directory_and_firefox_app="NO"
 	else
 		# Update the buiild file version
-		if  [ "${keep_version_build_file_record}" == "YES" ] ; then
-			mv "${current_version_build_file}" "${last_version_build_file}"
+		if [ "${keep_version_build_file_record}" == "YES" ] ; then
+			mv "${current_version_build_file}" "${lastest_version_build_file}"
 		else
-			rm -f "${last_version_build_file}"
+			rm -f "${lastest_version_build_file}"
 		fi
 	fi
 	
@@ -492,5 +512,6 @@ fi
 # clean up the mess
 export exit_value=0
 clean_exit
+
 
 

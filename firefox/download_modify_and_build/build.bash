@@ -25,11 +25,16 @@ cd "`dirname \"$0\"`"
 # Run the command below (from within this directory) to build FireFox :
 ./build_latest_firefox_with_default_system_proxy.bash com.example
 
-if [ ${?} != 0 ] ; then
-	echo "FireFox Build Failed."
-	echo "Please examine the output, make changes and then try again."
+build_result=${?}
+if [ ${build_result} != 0 ] ; then
+	if [ ${build_result} != 1 ] ; then
+		echo "FireFox Build Failed."
+		echo "Please examine the output make changes and then try again."
+	fi
 	exit -1
 fi
+
+
 
 # Add on any post actions you would like to take place once your 
 # build of FireFox has completed successfully.
