@@ -30,8 +30,13 @@ if [ ${build_result} != 0 ] ; then
 	if [ ${build_result} != 1 ] ; then
 		echo "FireFox Build Failed."
 		echo "Please examine the output make changes and then try again."
+		exit -1
 	fi
-	exit -1
+	# Continue with upload to server even if there are no updates downloaded.
+    # Add an exit here should you wish to stop uploading even in the event of
+    # no updates being availible. Note, that if you add an exit at this point
+    # and a future build fails to upload then it may take a while for that
+    # upload to take place.
 fi
 
 
