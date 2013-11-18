@@ -42,6 +42,7 @@
 #    2.0 : Adds a varible which contains the version of FireFox which we will be building.
 #    2.1 : Adds a check for the version of FireFox which is available prior to downloading.
 #    2.2 : Adds a variable which may be set to stop the new default behavior of not downloading the same version which was last built.
+#    2.3 : Fixes for dealing with redirects.
 
 # - - - - - - - - - - - - - - - - 
 # script settings
@@ -101,6 +102,12 @@ fi
 # work out where we are in the file system
 path_to_this_script="${0}"
 parent_folder="`dirname \"${path_to_this_script}\"`"
+
+# additional variables
+user_agent="Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9b5) Gecko/2008032619 Firefox/3.0b5 "
+
+# add on some search paths
+export PATH=/opt/local/bin:${PATH}
 
 # clean up various left overs.
 function clean_exit () {
@@ -330,16 +337,15 @@ else
     # pick a version to download
     if [ "${download_latest_firefox_version}" == "YES" ] ; then 
         # picks the latest including beta releases using the head command.
-        end_link=`curl ${start_link}${mid_link} 2> /dev/null |  grep 'id="downloadlink' | head -n 1 | awk -F 'href="' '{print $2}' | awk -F '"' '{print $1}'`
+        end_link=`wget --no-check-certificate --user-agent="${user_agent}"  ${start_link}${mid_link} -O - 2> /dev/null |  grep 'id="downloadlink' | head -n 1 | awk -F 'href="' '{print $2}' | awk -F '"' '{print $1}'`
     else
         # this simply picks the last available download link rather than first by using tail rather than head.
-        end_link=`curl ${start_link}${mid_link} 2> /dev/null |  grep 'id="downloadlink' | tail -n 1 | awk -F 'href="' '{print $2}' | awk -F '"' '{print $1}'`
+        end_link=`wget --no-check-certificate --user-agent="${user_agent}"  ${start_link}${mid_link} -O - 2> /dev/null |  grep 'id="downloadlink' | tail -n 1 | awk -F 'href="' '{print $2}' | awk -F '"' '{print $1}'`
     fi
 
     download_link="${start_link}${end_link}"
-    user_agent="Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9b5) Gecko/2008032619 Firefox/3.0b5 "
     output_document_path=/tmp/Firefox_`date "+%Y-%m-%d_%H-%M-%S"`.dmg
-    latest_availible_version=`(wget --spider --user-agent="${user_agent}" ${download_link} 2>&1| grep "Location:" | grep ".dmg" | awk -F "/firefox/releases/" '{print $2}' | awk -F "/" '{print $1}' ; exit \`echo $pipestatus | awk '{print $3}'\`)`
+    latest_availible_version=`(wget --spider --no-check-certificate --user-agent="${user_agent}" ${download_link} 2>&1| grep "Location:" | grep ".dmg" | awk -F "/firefox/releases/" '{print $2}' | awk -F "/" '{print $1}' ; exit \`echo $pipestatus | awk '{print $3}'\`)`
     if [ $? != 0 ] ; then
 		echo "Unable to determine latest version of Firefox available on servers."
 		export exit_value=-2
@@ -360,7 +366,7 @@ else
 
     echo "Attempting to download latest OS X version of FireFox...."
     echo "    Download Link : $download_link"
-    wget --user-agent="${user_agent}" --output-document="${output_document_path}" ${download_link} 
+    wget --no-check-certificate --user-agent="${user_agent}" --output-document="${output_document_path}" ${download_link} 
 
     ## --progress=dot 
     ## 2>&1 | sed s'/^/    /'
