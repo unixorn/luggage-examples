@@ -43,6 +43,7 @@
 #    2.1 : Adds a check for the version of FireFox which is available prior to downloading.
 #    2.2 : Adds a variable which may be set to stop the new default behavior of not downloading the same version which was last built.
 #    2.3 : Fixes for dealing with redirects.
+#    2.4 : Fixes an issue relating to checking for latest version number availible. Also corrects the download latest firefox version option.
 
 # - - - - - - - - - - - - - - - - 
 # script settings
@@ -345,7 +346,7 @@ else
 
     download_link="${start_link}${end_link}"
     output_document_path=/tmp/Firefox_`date "+%Y-%m-%d_%H-%M-%S"`.dmg
-    latest_availible_version=`(wget --spider --no-check-certificate --user-agent="${user_agent}" ${download_link} 2>&1| grep "Location:" | grep ".dmg" | awk -F "/firefox/releases/" '{print $2}' | awk -F "/" '{print $1}' ; exit \`echo $pipestatus | awk '{print $3}'\`)`
+    latest_availible_version=`(wget --spider --no-check-certificate --user-agent="${user_agent}" ${download_link} 2>&1| grep "Location:" | tail -n 1 | grep ".dmg" | awk -F "/firefox/releases/" '{print $2}' | awk -F "/" '{print $1}' ; exit \`echo $pipestatus | awk '{print $3}'\`)`
     if [ $? != 0 ] ; then
 		echo "Unable to determine latest version of Firefox available on servers."
 		export exit_value=-2
