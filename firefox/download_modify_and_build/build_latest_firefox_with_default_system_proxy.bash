@@ -43,7 +43,7 @@
 #    2.1 : Adds a check for the version of FireFox which is available prior to downloading.
 #    2.2 : Adds a variable which may be set to stop the new default behavior of not downloading the same version which was last built.
 #    2.3 : Fixes for dealing with redirects.
-#    2.4 : Fixes an issue relating to checking for latest version number availible. Also corrects the download latest firefox version option.
+#    2.4 : Fixes issue relating to retriving the latest version number availible. Also corrects issue with download latest Firefox version option.
 
 # - - - - - - - - - - - - - - - - 
 # script settings
@@ -71,7 +71,7 @@ fi
 
 # download latest version? ("YES"/"NO) - if set to "NO" then an older version will be downloaded.
 if [ "${download_latest_firefox_version}" != "YES" ] && [ "${download_latest_firefox_version}" != "NO" ] ; then
-    download_latest_firefox_version="YES"
+    download_latest_firefox_version="NO"
 fi
 
 # download and build same copy again? ("YES"/"NO")
@@ -338,10 +338,10 @@ else
     # pick a version to download
     if [ "${download_latest_firefox_version}" == "YES" ] ; then 
         # picks the latest including beta releases using the head command.
-        end_link=`wget --no-check-certificate --user-agent="${user_agent}"  ${start_link}${mid_link} -O - 2> /dev/null |  grep 'id="downloadlink' | head -n 1 | awk -F 'href="' '{print $2}' | awk -F '"' '{print $1}'`
+        end_link=`wget --no-check-certificate --user-agent="${user_agent}"  ${start_link}${mid_link} -O - 2> /dev/null |  grep 'id="downloadlink' | tail -n 1 | awk -F 'href="' '{print $2}' | awk -F '"' '{print $1}'`
     else
         # this simply picks the last available download link rather than first by using tail rather than head.
-        end_link=`wget --no-check-certificate --user-agent="${user_agent}"  ${start_link}${mid_link} -O - 2> /dev/null |  grep 'id="downloadlink' | tail -n 1 | awk -F 'href="' '{print $2}' | awk -F '"' '{print $1}'`
+        end_link=`wget --no-check-certificate --user-agent="${user_agent}"  ${start_link}${mid_link} -O - 2> /dev/null |  grep 'id="downloadlink' | head -n 1 | awk -F 'href="' '{print $2}' | awk -F '"' '{print $1}'`
     fi
 
     download_link="${start_link}${end_link}"
