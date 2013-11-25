@@ -15,6 +15,7 @@ if [ "$3" != "/" ]; then
 fi
 
 # Variables. Edit these.
+reverse_domain="com.huronhs"
 printername="psm_HHS_Office_9040"
 location="HHS Office"
 gui_display_name="HHS Main Office 9040 Fax Copier"
@@ -22,9 +23,14 @@ address="lpd://10.13.1.8/HHS_Office_9040_Fax_Printer"
 driver_ppd="/Library/Printers/PPDs/Contents/Resources/HP LaserJet 9040.gz"
 
 ### Printer Install ###
+# In case we are making changes to a printer we need to remove an existing queue if it exists.
+/usr/bin/lpstat -p $printername
+if [ $? -eq 0 ]; then
+        /usr/sbin/lpadmin -x $printername
+fi
+
 # Install the printer.
 /usr/sbin/lpadmin -p "$printername" -L "$location" -D "$gui_display_name" -v "$address" -P "$driver_ppd" -E -o printer-is-shared=false
-
 
 # Enable and start the printers on the system (after adding the printer initially it is paused).
 /usr/sbin/cupsenable $(lpstat -p | grep -w "printer" | awk '{print$2}')
@@ -46,6 +52,8 @@ printer_conf="/private/etc/cups/printers_deployment/$printername"
 mkdir /private/etc/cups/printers_deployment/uninstalls
 uninstall_script="/private/etc/cups/printers_deployment/uninstalls/$printername.sh"
 /bin/echo "#!/bin/sh" > "$uninstall_script"
+/bin/echo "rm -f /private/var/db/receipts/$reverse_domain.$printername.bom" >> "$uninstall_script"
+/bin/echo "rm -f /private/var/db/receipts/$reverse_domain.$printername.plist" >> "$uninstall_script"
 /bin/echo "/usr/sbin/lpadmin -x $printername" >> "$uninstall_script"
 /bin/echo "srm /private/etc/cups/printers_deployment/$printername" >> "$uninstall_script"
 /bin/echo "srm /private/etc/cups/printers_deployment/uninstalls/$printername.sh" >> "$uninstall_script"
