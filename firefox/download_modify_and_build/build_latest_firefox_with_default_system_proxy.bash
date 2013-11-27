@@ -43,7 +43,8 @@
 #    2.1 : Adds a check for the version of FireFox which is available prior to downloading.
 #    2.2 : Adds a variable which may be set to stop the new default behavior of not downloading the same version which was last built.
 #    2.3 : Fixes for dealing with redirects.
-#    2.4 : Fixes issue relating to retriving the latest version number availible. Also corrects issue with download latest Firefox version option.
+#    2.4 : Fixes issue relating to retriving the latest version number availible.
+#    2.5 : Minor update include the version in the output .dmg file name.
 
 # - - - - - - - - - - - - - - - - 
 # script settings
@@ -500,7 +501,7 @@ if [ "${proceed_with_building_pacakge}" == "YES" ] ; then
 
 	# move the built dmg into this directory (just change the output name / destination if required - also possibly remove the -i flag)
 	# mv ./${build_package_id}/${build_package_id}-`date "+%Y%m%d"`.dmg ./${build_package_id}-`date "+%Y-%m-%d_%H-%M-%S"`.dmg
-	mv -i ./${build_package_id}/${build_package_id}-`date "+%Y%m%d"`.dmg ./
+    mv -i ./${build_package_id}/${build_package_id}-`date "+%Y%m%d"`.dmg ./${build_package_id}-`date "+%Y%m%d"`-${build_firefox_version}.dmg
 	if [ $? != 0 ] ; then
 		# if we were unable to move the .dmg out of the build directory then
 		# disable clean up of the build directory and do not remove Firefox either.
