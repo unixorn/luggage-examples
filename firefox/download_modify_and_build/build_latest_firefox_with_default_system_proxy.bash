@@ -45,6 +45,7 @@
 #    2.3 : Fixes for dealing with redirects.
 #    2.4 : Fixes issue relating to retriving the latest version number availible.
 #    2.5 : Minor update include the version in the output .dmg file name.
+#    2.6 : Now checks for updates directly with Mozzila and offers language specfic download.
 
 # - - - - - - - - - - - - - - - - 
 # script settings
@@ -60,6 +61,11 @@ if [ "${overwirte_old_copy}" != "YES" ] && [ "${overwirte_old_copy}" != "NO" ] ;
     overwirte_old_copy="YES"
 fi
 
+# download language selection
+if [ "${download_language}" == "" ] ; then
+    download_language="English (US)"
+fi
+
 # remove firefox app and build directory when finished? ("YES"/"NO")
 if [ "${clean_up_build_directory_and_firefox_app}" != "YES" ] && [ "${clean_up_build_directory_and_firefox_app}" != "NO" ] ; then
     clean_up_build_directory_and_firefox_app="YES"
@@ -68,11 +74,6 @@ fi
 # build a package and put it into a dmg
 if [ "${proceed_with_building_pacakge}" != "YES" ] && [ "${proceed_with_building_pacakge}" != "NO" ] ; then
     proceed_with_building_pacakge="YES"
-fi
-
-# download latest version? ("YES"/"NO) - if set to "NO" then an older version will be downloaded.
-if [ "${download_latest_firefox_version}" != "YES" ] && [ "${download_latest_firefox_version}" != "NO" ] ; then
-    download_latest_firefox_version="NO"
 fi
 
 # download and build same copy again? ("YES"/"NO")
@@ -333,19 +334,9 @@ else
     
     # Download the latest version of firefox
     echo "Attempting to check for latest version of FireFox...."
-    start_link="http://www.macupdate.com"
-    mid_link="/app/mac/10700/firefox"
-    
-    # pick a version to download
-    if [ "${download_latest_firefox_version}" == "YES" ] ; then 
-        # picks the latest including beta releases using the head command.
-        end_link=`wget --no-check-certificate --user-agent="${user_agent}"  ${start_link}${mid_link} -O - 2> /dev/null |  grep 'id="downloadlink' | tail -n 1 | awk -F 'href="' '{print $2}' | awk -F '"' '{print $1}'`
-    else
-        # this simply picks the last available download link rather than first by using tail rather than head.
-        end_link=`wget --no-check-certificate --user-agent="${user_agent}"  ${start_link}${mid_link} -O - 2> /dev/null |  grep 'id="downloadlink' | head -n 1 | awk -F 'href="' '{print $2}' | awk -F '"' '{print $1}'`
-    fi
-
-    download_link="${start_link}${end_link}"
+    check_link="https://www.mozilla.org/en-US/firefox/"
+    # this simply picks the last available download os x link (OSX is selected using the "print $5" awk command)
+	download_link=`wget --no-check-certificate --user-agent="${user_agent}" ${check_link} -O - 2> /dev/null | grep -A2 "Download Firefox — ${download_language}" | tail -n1 | awk -F "href=\"" '{print $5}' | awk -F "\"" '{print $1}' | sed 's/amp;//'`
     output_document_path=/tmp/Firefox_`date "+%Y-%m-%d_%H-%M-%S"`.dmg
     latest_availible_version=`(wget --spider --no-check-certificate --user-agent="${user_agent}" ${download_link} 2>&1| grep "Location:" | tail -n 1 | grep ".dmg" | awk -F "/firefox/releases/" '{print $2}' | awk -F "/" '{print $1}' ; exit \`echo $pipestatus | awk '{print $3}'\`)`
     if [ $? != 0 ] ; then
