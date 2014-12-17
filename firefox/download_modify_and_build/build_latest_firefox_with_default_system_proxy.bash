@@ -28,6 +28,9 @@
 #    
 #    Example usage for this script : /path/to/this/script.bash com.yourdomain
 #
+#    You may wish to take a lookg at autopkg : https://github.com/autopkg/autopkg
+#    
+#
 # Script version :
 #    1.0 : Initial release (basic implementation)
 #    1.1 : Added some additional checks, options and assistance relating to wget and make (developer tools).
