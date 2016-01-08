@@ -48,6 +48,7 @@
 #    2.6 : Now checks for updates directly with Mozzila and offers language specfic download.
 #    2.7 : Updated to work with latest versions of FireFox.
 #    2.8 : Updated to work with latest updates to FireFox website.
+#    2.9 : Updated to work with latest updates to FireFox website.
 
 # - - - - - - - - - - - - - - - - 
 # script settings
@@ -338,7 +339,7 @@ else
     echo "Attempting to check for latest version of FireFox...."
     check_link="https://www.mozilla.org/en-US/firefox/all/"
     # this simply picks the last available download os x link (OSX is selected using the "print $5" awk command)
-	download_link=`wget --no-check-certificate --user-agent="${user_agent}" ${check_link} -O - 2> /dev/null | grep -A3 "${download_language}</td>" | tail -n1 | awk -F "href=\"" '{print $2}' | awk -F "\"" '{print $1}' | sed 's/amp;//'`
+	download_link=`wget --no-check-certificate --user-agent="${user_agent}" ${check_link} -O - 2> /dev/null | grep -A5 "${download_language}</td>" | tail -n1 | awk -F "href=\"" '{print $2}' | awk -F "\"" '{print $1}' | sed 's/amp;//'`
     output_document_path=/tmp/Firefox_`date "+%Y-%m-%d_%H-%M-%S"`.dmg
     latest_availible_version=`(wget --spider --no-check-certificate --user-agent="${user_agent}" ${download_link} 2>&1| grep "Location:" | tail -n 1 | grep ".dmg" | awk -F "/firefox/releases/" '{print $2}' | awk -F "/" '{print $1}' ; exit \`echo $pipestatus | awk '{print $3}'\`)`
     if [ $? != 0 ] ; then
