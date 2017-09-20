@@ -1,13 +1,13 @@
 #!/bin/bash
 #
-# (C) Henri Shustak 2011
+# (C) Henri Shustak 2013
 #
 # Released under the GNU GPL v3 or later
 #
 # About this script : 
-#    Will download latest Mac OS X version of FireFox
+#    Will download latest Mac OS X version of Google Chrome
 #    Updates default so that the Mac OS X system proxy is used.
-#    Builds package installer package for this modified version of FireFox
+#    Builds package installer package for this modified version of Chrome
 #    Modify this script to alter other various other settings.
 #
 # Requirements : 
@@ -29,27 +29,7 @@
 #    Example usage for this script : /path/to/this/script.bash com.yourdomain
 #
 # Script version :
-#    1.0 : Initial release (basic implementation)
-#    1.1 : Added some additional checks, options and assistance relating to wget and make (developer tools).
-#    1.2 : Added some ownership changes to the installed application (now admin has write access).
-#    1.3 : Now downloads the very latest version available from MacUpdate.
-#    1.4 : Fixed bug with regards checking for make being installed on the system.
-#    1.5 : Using wget to download app2luggage.rb rather than curl.
-#    1.6 : Added option to use an existing copy of FireFox.app (just modify and build package).
-#    1.7 : Added a check for trollop. Minor changes to default settings within script.
-#    1.8 : Added a check for environment variable settings which may have been exported.
-#    1.9 : Adds an option (environment variable) which can prevent install if there is an existing version.
-#    2.0 : Adds a varible which contains the version of FireFox which we will be building.
-#    2.1 : Adds a check for the version of FireFox which is available prior to downloading.
-#    2.2 : Adds a variable which may be set to stop the new default behavior of not downloading the same version which was last built.
-#    2.3 : Fixes for dealing with redirects.
-#    2.4 : Fixes issue relating to retriving the latest version number availible.
-#    2.5 : Minor update include the version in the output .dmg file name.
-#    2.6 : Now checks for updates directly with Mozzila and offers language specfic download.
-#    2.7 : Updated to work with latest versions of FireFox.
-#    2.8 : Updated to work with latest updates to FireFox website.
-#    2.9 : Updated to work with latest updates to FireFox website.
-#    3.0 : Updated to work with latest updates to FireFox website.
+#    1.1 : Initial release (basic implementation)
 
 # - - - - - - - - - - - - - - - - 
 # script settings
@@ -57,27 +37,27 @@
 
 # package ID for output package (no spaces)
 if [ "${build_package_id}" == "" ] ; then
-    build_package_id="Firefox_defaults_to_system_proxy"
+    build_package_id="Google_Chrome"
 fi
 
-# overwrite old copy of firefox? ("YES"/"NO")
+# overwrite old copy of Chrome? ("YES"/"NO")
 if [ "${overwirte_old_copy}" != "YES" ] && [ "${overwirte_old_copy}" != "NO" ] ; then
     overwirte_old_copy="YES"
 fi
 
-# download language selection
-if [ "${download_language}" == "" ] ; then
-    download_language="English (US)"
-fi
-
-# remove firefox app and build directory when finished? ("YES"/"NO")
-if [ "${clean_up_build_directory_and_firefox_app}" != "YES" ] && [ "${clean_up_build_directory_and_firefox_app}" != "NO" ] ; then
-    clean_up_build_directory_and_firefox_app="YES"
+# remove Chrome app and build directory when finished? ("YES"/"NO")
+if [ "${clean_up_build_directory_and_chrome_app}" != "YES" ] && [ "${clean_up_build_directory_and_chrome_app}" != "NO" ] ; then
+    clean_up_build_directory_and_chrome_app="YES"
 fi
 
 # build a package and put it into a dmg
 if [ "${proceed_with_building_pacakge}" != "YES" ] && [ "${proceed_with_building_pacakge}" != "NO" ] ; then
     proceed_with_building_pacakge="YES"
+fi
+
+# download latest version? ("YES"/"NO) - if set to "NO" then an older version will be downloaded.
+if [ "${download_latest_chrome_version}" != "YES" ] && [ "${download_latest_chrome_version}" != "NO" ] ; then
+    download_latest_chrome_version="YES"
 fi
 
 # download and build same copy again? ("YES"/"NO")
@@ -86,12 +66,12 @@ if [ "${download_and_build_same_copy_again}" != "YES" ] && [ "${download_and_bui
 fi
 
 
-# use existing copy of FireFox within this directory ("YES"/"NO") - if enabled no new version will be downloaded
-if [ "${use_exisitng_copy_of_firefox}" != "YES" ] && [ "${use_exisitng_copy_of_firefox}" != "NO" ] ; then
-    use_exisitng_copy_of_firefox="NO"
+# use existing copy of Google Chrome within this directory ("YES"/"NO") - if enabled no new version will be downloaded
+if [ "${use_exisitng_copy_of_chrome}" != "YES" ] && [ "${use_exisitng_copy_of_chrome}" != "NO" ] ; then
+    use_exisitng_copy_of_chrome="NO"
 fi
 
-# Configure the install package to install even if there is an existing copy of FireFox on the destination system ("YES"/"NO")
+# Configure the install package to install even if there is an existing copy of Google Chrome on the destination system ("YES"/"NO")
 if  [ "${package_install_will_overwrite_existing_copy}" != "YES" ]  && [ "${package_install_will_overwrite_existing_copy}" != "NO" ] ; then
 	package_install_will_overwrite_existing_copy="YES"
 fi
@@ -110,12 +90,6 @@ fi
 path_to_this_script="${0}"
 parent_folder="`dirname \"${path_to_this_script}\"`"
 
-# additional variables
-user_agent="Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9b5) Gecko/2008032619 Firefox/3.0b5 "
-
-# add on some search paths
-export PATH=/opt/local/bin:${PATH}
-
 # clean up various left overs.
 function clean_exit () {
     # unmount image and remove the temporary mount point
@@ -125,16 +99,16 @@ function clean_exit () {
         rmdir "${image_mount_point}"
     fi
     # remove the package build directory?
-    if [ -d ./${build_package_id} ] &&  [ "${clean_up_build_directory_and_firefox_app}" == "YES" ] ; then 
+    if [ -d ./${build_package_id} ] &&  [ "${clean_up_build_directory_and_chrome_app}" == "YES" ] ; then 
             rm -R ./${build_package_id}
     fi
-    # remove the Firefox application?
-    if [ -d ./Firefox.app ] &&  [ "${clean_up_build_directory_and_firefox_app}" == "YES" ] ; then 
-            rm -R ./Firefox.app
+    # remove the Google Chrome application?
+    if [ -d "./Google Chrome.app" ] &&  [ "${clean_up_build_directory_and_chrome_app}" == "YES" ] ; then 
+            rm -R "./Google Chrome.app"
     fi
-    # remove the firefox current version build txt file(s)
+    # remove the Google Chrome current version build txt file(s)
     rm -f "${current_version_build_file}"
-    # remove the firefox download
+    # remove the Google Chome download
     rm -f "${output_document_path}"
     exit $exit_value
 }
@@ -146,14 +120,14 @@ function clean_exit () {
 
 if [ "${1}" == "" ] ; then 
     echo "Usage : /path_to_this_script/ reverse_domain"
-    echo "        eg. : ./build_latest_firefox_installer com.domain"
+    echo "        eg. : ./build_latest_google_chrome.bash com.domain"
     exit -1
 fi
 
 # check for invalid option combinations
-if [ "${proceed_with_building_pacakge}" == "NO" ] && [ "${use_exisitng_copy_of_firefox}" == "YES" ]; then
+if [ "${proceed_with_building_pacakge}" == "NO" ] && [ "${use_exisitng_copy_of_chrome}" == "YES" ]; then
     echo "Invalid option combination. If proceed_with_building_package is disabled and "
-    echo "use_existing_copy_of_firefox is enabled then nothing will be done."
+    echo "use_exisitng_copy_of_chrome is enabled then nothing will be done."
     export exit_value=-1
     clean_exit
 fi
@@ -169,19 +143,19 @@ if [ $? != 0 ] ; then
 fi
 
 # check for old version of application
-if [ "${use_exisitng_copy_of_firefox}" != "YES" ] ; then
-    if [ -e ./Firefox.app ] && [ "${overwirte_old_copy}" == "NO" ] ; then
-        echo "Will not overwrite copy of Firefox which has already been downloaded."
-        echo "Please remove the copy of Firefox within this directory and try running"
+if [ "${use_exisitng_copy_of_chrome}" != "YES" ] ; then
+    if [ -e "./Google Chrome.app" ] && [ "${overwirte_old_copy}" == "NO" ] ; then
+        echo "Will not overwrite copy of Chrome which has already been downloaded."
+        echo "Please remove the copy of Chrome within this directory and try running"
         echo "this script again."
         export exit_value=-1
         clean_exit
     fi
 else
-    if ! [ -e ./Firefox.app ] ; then 
-        echo "Unable to locate a copy of Firefox.app which has already been downloaded."
-        echo "Either place a copy of Firefox.app into same directory as this script or"
-        echo "disable the option \"use_exisitng_copy_of_firefox\" within this script.s"
+    if ! [ -e "./Google Chrome.app" ] ; then 
+        echo "Unable to locate a copy of \"Google Chrome.app\" which has already been downloaded."
+        echo "Either place a copy of \"Google Chrome.app\" into same directory as this script or"
+        echo "disable the option \"use_exisitng_copy_of_chrome\" within this script."
         export exit_value=-1
         clean_exit
     fi
@@ -320,34 +294,43 @@ lastest_version_build_file="${parent_folder}/latest_build_version.txt"
 current_version_build_file="${parent_folder}/current_build_version.txt"
 last_version_built=`cat "${lastest_version_build_file}" 2> /dev/null`
 if [ $? != 0 ] ; then
-    echo "WARNING! : Unable to determine last built version of Firefox."
-    echo "           Could be the first time you are building the FireFox package."
+    echo "WARNING! : Unable to determine last built version of Chrome."
+    echo "           Could be the first time you are building the Chrome package."
     last_version_built="?.?.?"
 fi
 
 
 
-if [ "${use_exisitng_copy_of_firefox}" == "YES" ] ; then
-    echo "Using existing copy of FireFox (new copy will not be downloaded)."
+if [ "${use_exisitng_copy_of_chrome}" == "YES" ] ; then
+    echo "Using existing copy of Chrome (new copy will not be downloaded)."
 else
     
     
     # - - - - - - - - - - - - - - - - 
-    # get latest copy of FireFox.app  
+    # get latest copy of "Google Chome.app"
     # - - - -- - - - - - - - - - - - -
     
-    # Download the latest version of firefox
-    echo "Attempting to check for latest version of FireFox...."
-    check_link="https://www.mozilla.org/en-US/firefox/all/"
-    # this simply picks the last available download os x link (OSX is selected using the "print $5" awk command)
-	download_link=`wget --no-check-certificate --user-agent="${user_agent}" ${check_link} -O - 2> /dev/null | grep -A7 "${download_language}" | grep "OS X" | awk -F "href=\"" '{print $2}' | awk -F "\"" '{print $1}' | sed 's/amp;//'`
-    output_document_path=/tmp/Firefox_`date "+%Y-%m-%d_%H-%M-%S"`.dmg
-    latest_availible_version=`(wget --spider --no-check-certificate --user-agent="${user_agent}" ${download_link} 2>&1| grep "Location:" | tail -n 1 | grep ".dmg" | awk -F "/firefox/releases/" '{print $2}' | awk -F "/" '{print $1}' ; exit \`echo $pipestatus | awk '{print $3}'\`)`
-    if [ $? != 0 ] ; then
-		echo "Unable to determine latest version of Firefox available on servers."
-		export exit_value=-2
+    # Download the latest version of Google Chrome
+    echo "Attempting to check for latest version of Google Chrome...."
+    start_link="http://www.macupdate.com"
+    mid_link="/app/mac/32956/google-chrome"
+    
+    # pick a version to download
+    if [ "${download_latest_chrome_version}" == "YES" ] ; then 
+        # picks the latest including beta releases using the head command.
+        end_link=`curl ${start_link}${mid_link} 2> /dev/null |  grep 'id="downloadlink' | head -n 1 | awk -F 'href="' '{print $2}' | awk -F '"' '{print $1}'`
+    fi
+
+    download_link="${start_link}${end_link}"
+    user_agent="Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9b5) Gecko/2008032619 Firefox/3.0b5 "
+    output_document_path=/tmp/Google-Chrome_`date "+%Y-%m-%d_%H-%M-%S"`.dmg
+    latest_availible_version=`(wget http://macupdate.com/app/mac/32956/google-chrome -O - 2>/dev/null | cat | grep 'id="appversinfo">' | awk -F 'id="appversinfo">' '{print $2}' | awk -F '</span></div>' '{print $1}' ; exit \`echo $PIPESTATUS | awk '{ print $1 }'\` )`
+
+    if [ ${?} != 0 ] || [ "${latest_availible_version}" == "" ] ; then
+	echo "Unable to determine latest version of Google Chrome available on servers."
+	export exit_value=-2
         clean_exit
-	fi
+     fi
 
     echo "    Last successful built version : $last_version_built"
     echo "    Latest available version      : $latest_availible_version"
@@ -361,7 +344,7 @@ else
 		fi
 	fi
 
-    echo "Attempting to download latest OS X version of FireFox...."
+    echo "Attempting to download latest OS X version of Google Chrome...."
     echo "    Download Link : $download_link"
     wget --no-check-certificate --user-agent="${user_agent}" --output-document="${output_document_path}" ${download_link} 
 
@@ -370,36 +353,36 @@ else
 
     # check the download completed successfully
     if [ $? != 0 ] ; then
-        echo "Download of Firefox failed. Please try to download manually."
+        echo "Download of Google Chrome failed. Please try to download manually."
         export exit_value=-1
         clean_exit
     fi
 
     # mount the DMG and copy into this directory
-    export image_mount_point=`mktemp -d /tmp/latest_firefox_mount_point.XXXXX`
+    export image_mount_point=`mktemp -d /tmp/latest_google-chrome_mount_point.XXXXX`
     hdiutil attach "${output_document_path}" -quiet -nobrowse -mountpoint "${image_mount_point}/"
     if [ $? != 0 ] ; then
-        echo "Unable to mount the Firefox DMG which was downloaded."
+        echo "Unable to mount the Google Chrome DMG which was downloaded."
         echo "Please try running this script again."
         export exit_value=-1
         clean_exit
     fi
 
     # remove old version if we got this far.
-    if [ -e ./Firefox.app ] ; then
-        rm -R ./Firefox.app
+    if [ -e "./Google Chrome.app" ] ; then
+        rm -R "./Google Chrome.app"
         if [ $? != 0 ] ; then
-            echo "Unable to remove the copy of Firefox in this directory."
+            echo "Unable to remove the copy of Google Chrome in this directory."
             echo "Please manually remove and then try again."
             export exit_value=-1
             clean_exit
         fi
     fi
 
-    # copy out fire fox from the DMG
-    cp -r "${image_mount_point}/Firefox.app" ./Firefox.app
+    # copy out Google Chrome from the DMG
+    cp -r "${image_mount_point}/Google Chrome.app" "./Google Chrome.app"
     if [ $? != 0 ] ; then
-        echo "Error coping Firefox from the DMG to this directory."
+        echo "Error coping Google Chrome from the DMG to this directory."
         export exit_value=-1
         clean_exit
     fi
@@ -409,7 +392,7 @@ else
     # unmount the DMG
     hdiutil detach "${image_mount_point}" -quiet
     if [ $? != 0 ] ; then
-        echo "Error un-mounting the Firefox from the DMG."
+        echo "Error un-mounting the Google Chome DMG."
         export exit_value=-1
         clean_exit
     fi
@@ -417,42 +400,30 @@ else
 fi
 
 
-# Check the version of FireFox for which we will be building a package.
-if ! [ -f ./Firefox.app/Contents/Info.plist ] ; then
-    echo "Error unable to locate the Info.plist file for determining version of FireFox."
+# Check the version of Google Chrome for which we will be building a package.
+if ! [ -f "./Google Chrome.app/Contents/Info.plist" ] ; then
+    echo "Error unable to locate the Info.plist file for determining version of Google Chrome."
     export exit_value=-1
     clean_exit
 else
-	build_firefox_version=`cat ./Firefox.app/Contents/Info.plist | grep -A 1 "<key>CFBundleShortVersionString</key>" | tail -n 1 | awk -F "<string>" '{print $2}' | awk -F "</string>" '{print $1}'`	
+	build_chrome_version=`cat "./Google Chrome.app/Contents/Info.plist" | grep -A 1 "<key>CFBundleShortVersionString</key>" | tail -n 1 | awk -F "<string>" '{print $2}' | awk -F "</string>" '{print $1}'`	
 	if [ "${keep_version_build_file_record}" == "YES" ] ; then
-		echo ${build_firefox_version} > "${current_version_build_file}"
+		echo ${build_chrome_version} > "${current_version_build_file}"
 	fi
 fi
 
 
 
 # - - - - - - - - - - - - - - - - 
-# make alteration to Firefox.app
+# make alteration to "Google Chome.app"
 # - - - -- - - - - - - - - - - - -
 
-# default settings for new user templates so that using the Mac OS X network proxy settings are enabled.
+# Not doing anything in this example. But you could :)
 
 # Check that the file we are will write to exits
 
-if ! [ -f ./Firefox.app/Contents/Resources/defaults/pref/channel-prefs.js ] ; then
-    echo "Error unable to locate the preference file for updates."
-    export exit_value=-1
-    clean_exit
-fi
+# ......add your code here to make modifications........
 
-# set the default proxy to use the system preferences
-echo 'pref("network.proxy.type", "5");' >> ./Firefox.app/Contents/Resources/defaults/pref/channel-prefs.js
-if [ $? != 0 ] ; then
-    echo "Unable to update the network proxy settings."
-    echo "Please try to cary out this modification by hand."
-    export exit_value=-1
-    clean_exit
-fi
 
 
 # - - - - - - - - - - - - - - - - 
@@ -474,11 +445,11 @@ if [ "${proceed_with_building_pacakge}" == "YES" ] ; then
     fi
     
 	# build it with app2luggage
-	full_path_to_firefox="`pwd`/Firefox.app"
+	full_path_to_chrome="`pwd`/Google Chrome.app"
 	additional_build_options=""
 	if [ "${package_install_will_overwrite_existing_copy}" == "YES" ] ; then
 		# run app2luggage with the --remove-existing-version option
-		./app2luggage.rb --application="${full_path_to_firefox}" --package-id="${build_package_id}" --reverse-domain=${1}  --remove-exisiting-version
+		./app2luggage.rb --application="${full_path_to_chrome}" --package-id="${build_package_id}" --reverse-domain=${1}  --remove-exisiting-version
 		if [ $? != 0 ] ; then
 			echo "Error during building of the package. You may need to install some gems?"
 			export exit_value=-1
@@ -486,7 +457,7 @@ if [ "${proceed_with_building_pacakge}" == "YES" ] ; then
 		fi
 	else
 		# run app2luggage with the no-overwrite option
-		./app2luggage.rb --application="${full_path_to_firefox}" --package-id="${build_package_id}" --reverse-domain=${1}  --no-overwrite
+		./app2luggage.rb --application="${full_path_to_chrome}" --package-id="${build_package_id}" --reverse-domain=${1}  --no-overwrite
 		if [ $? != 0 ] ; then
 			echo "Error during building of the package. You may need to install some gems?"
 			export exit_value=-1
@@ -496,11 +467,11 @@ if [ "${proceed_with_building_pacakge}" == "YES" ] ; then
 
 	# move the built dmg into this directory (just change the output name / destination if required - also possibly remove the -i flag)
 	# mv ./${build_package_id}/${build_package_id}-`date "+%Y%m%d"`.dmg ./${build_package_id}-`date "+%Y-%m-%d_%H-%M-%S"`.dmg
-    mv -i ./${build_package_id}/${build_package_id}-`date "+%Y%m%d"`.dmg ./${build_package_id}-`date "+%Y%m%d"`-${build_firefox_version}.dmg
+	mv -i ./${build_package_id}/${build_package_id}-`date "+%Y%m%d"`.dmg ./
 	if [ $? != 0 ] ; then
 		# if we were unable to move the .dmg out of the build directory then
 		# disable clean up of the build directory and do not remove Firefox either.
-		clean_up_build_directory_and_firefox_app="NO"
+		clean_up_build_directory_and_chrome_app="NO"
 	else
 		# Update the buiild file version
 		if [ "${keep_version_build_file_record}" == "YES" ] ; then

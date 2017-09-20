@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+# Copyright 2013
+# Henri Shustak
+# Licenced Under the GNU GPL
+
+#exit status
+exit_status=0
+
+sleep 5
+sync
+
+# current user - will not work if there are multiple users logged in
+current_gui_user=`ps -Ajc | grep loginwindow | head -n1 | awk '{print $1}'` 
+
+
+sudo -u $current_gui_user -i "defaults write com.apple.Safari.plist WebKitJavaScriptCanOpenWindowsAutomatically NO"
+if [ $? != 0 ] ; then exit_status=1 ; fi
+sync
+sleep 1
+
+sudo -u $current_gui_user -i "defaults write com.apple.Safari.plist com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaScriptCanOpenWindowsAutomatically NO"
+if [ $? != 0 ] ; then exit_status=2 ; fi
+sync
+sleep 1
+
+exit ${exit_status}
+
